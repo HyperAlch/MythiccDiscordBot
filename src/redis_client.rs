@@ -1,0 +1,33 @@
+use redis::{Commands, RedisError};
+use std::env;
+
+pub fn connect() -> redis::Connection {
+    dotenv::dotenv().ok();
+    let redis_host_name =
+        env::var("REDIS_HOSTNAME").expect("Missing environment variable REDIS_HOSTNAME");
+
+    let redis_password = env::var("REDIS_PASSWORD").unwrap_or_default();
+
+    let is_tls: bool = env::var("TLS")
+        .expect("Missing environment variable TLS")
+        .parse()
+        .expect("Environment variable TLS must be true or false");
+
+    let uri_scheme = if is_tls { "rediss" } else { "redis" };
+
+    let redis_conn_url = format!("{}://:{}@{}", uri_scheme, redis_password, redis_host_name);
+    redis::Client::open(redis_conn_url)
+        .expect("Invalid connection URL")
+        .get_connection()
+        .expect("Failed to connect to Redis")
+}
+
+pub fn get_bot_role(conn: &mut redis::Connection) -> Result<String, RedisError> {
+    let value: String = conn.get("bot admin role")?;
+    Ok(value)
+}
+
+pub fn set_bot_role(conn: &mut redis::Connection, role_id: String) -> redis::RedisResult<()> {
+    let _: () = conn.set("bot admin role", role_id)?;
+    Ok(())
+}

@@ -1,0 +1,11 @@
+version: '2'
+
+services:
+  redis-master:
+    image: 'bitnami/redis:latest'
+    ports:
+      - '6379:6379'
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    volumes:
+      - './redis-AOF:/bitnami'

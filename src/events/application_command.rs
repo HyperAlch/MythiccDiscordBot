@@ -2,7 +2,7 @@ use crate::slash_commands as sc;
 use serenity::model::application::interaction::{Interaction, InteractionResponseType};
 use serenity::prelude::*;
 
-pub async fn handle(ctx: &Context, interaction: &Interaction) {
+pub async fn handle(ctx: Context, interaction: Interaction) {
     if let Interaction::ApplicationCommand(command) = interaction {
         println!("Received command interaction: {}", command.data.name);
 

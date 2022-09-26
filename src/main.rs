@@ -19,7 +19,7 @@ const FOLLOWER_ROLE_ID: RoleId = RoleId(888568260151345192);
 #[async_trait]
 impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
-        events::application_command::handle(&ctx, &interaction).await;
+        events::application_command::handle(ctx, interaction).await;
     }
 
     async fn guild_member_addition(&self, ctx: Context, new_member: Member) {

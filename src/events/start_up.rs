@@ -63,7 +63,7 @@ pub async fn handle(ctx: Context, ready: Ready) {
     let guild = Guild::new(&guild_id, &ctx).await;
 
     guild.check_bot_admin_role(&mut connection, &ctx).await;
-    guild.check_follower_role(&mut connection, &ctx).await;
+    guild.check_follower_role(&mut connection).await;
 
     register_commands(&ctx, &guild_id).await;
 }
@@ -144,44 +144,23 @@ impl Guild {
             Err(e) => panic!("{}", e),
         }
     }
-    async fn check_follower_role(&self, connection: &mut redis::Connection, ctx: &Context) {
-        let _follower_id = RoleId(
+    async fn check_follower_role(&self, connection: &mut redis::Connection) {
+        let follower_id = RoleId(
             env::var("ROLE_FOLLOWER_ID")
                 .expect("Expected ROLE_FOLLOWER_ID in environment")
                 .parse()
                 .expect("ROLE_FOLLOWER_ID must be an integer"),
         );
 
-        match redis_client::get_follower_role(connection) {
-            // If the redis query was successful
-            Ok(role_id) => match role_id {
-                Some(role_id) => {
-                    if self.role_exists_from_str(&role_id) {
-                        println!("Follower Role Found: {}", role_id);
-                    } else {
-                        self.create_follower_role(connection, &ctx).await;
-                    }
-                }
-                None => self.create_follower_role(connection, &ctx).await,
-            },
-            // If the redis query fails
-            Err(e) => panic!("{}", e),
+        if self.role_exists(&follower_id) {
+            println!("Follower role found: {}", follower_id.to_string());
+        } else {
+            panic!("Follower role not in guild, please add one!")
         }
-    }
-    async fn create_follower_role(&self, connection: &mut redis::Connection, ctx: &Context) {
-        println!("Starting Follower Role Creation Process...");
 
-        let follower_role = self
-            .guild_id
-            .create_role(&ctx.http, |r| {
-                r.hoist(false).name("Follower").colour(0x2fcc70)
-            })
-            .await
-            .unwrap();
-
-        match redis_client::set_follower_role(connection, follower_role.id.to_string()) {
-            Ok(_) => println!("Follower Role Set!"),
-            Err(e) => panic!("{}", e),
+        match redis_client::set_follower_role(connection, follower_id.to_string()) {
+            Ok(_) => (),
+            Err(e) => println!("{}", e),
         }
     }
 }

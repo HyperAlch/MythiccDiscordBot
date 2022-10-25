@@ -10,6 +10,9 @@ pub async fn handle(ctx: Context, new_member: Member) {
     let mut connection = redis_client::connect();
 
     give_follower_role(&mut new_member, &mut connection, &ctx).await;
+
+    // TODO: Logic for checking for a "log" channel ID and logging this
+    // event to that channel.
 }
 
 async fn give_follower_role(

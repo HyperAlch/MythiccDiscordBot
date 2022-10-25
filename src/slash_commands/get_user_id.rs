@@ -1,9 +1,12 @@
+use crate::slash_commands::errors::CommandError;
 use serenity::builder::CreateApplicationCommand;
 use serenity::model::application::command::CommandOptionType;
 use serenity::model::application::interaction::application_command::CommandDataOptionValue;
 use serenity::model::prelude::interaction::application_command::ApplicationCommandInteraction;
 
-pub fn execute(command_interaction: &ApplicationCommandInteraction) -> String {
+pub fn execute(
+    command_interaction: &ApplicationCommandInteraction,
+) -> Result<String, CommandError> {
     let options = command_interaction
         .data
         .options
@@ -14,9 +17,11 @@ pub fn execute(command_interaction: &ApplicationCommandInteraction) -> String {
         .expect("Expected user object");
 
     if let CommandDataOptionValue::User(user, _member) = options {
-        format!("{}'s id is {}", user.tag(), user.id)
+        Ok(format!("{}'s id is {}", user.tag(), user.id))
     } else {
-        "Please provide a valid user".to_string()
+        Err(CommandError::Other(
+            "Please provide a valid user".to_string(),
+        ))
     }
 }
 

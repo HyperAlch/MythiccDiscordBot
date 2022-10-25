@@ -1,3 +1,4 @@
+use crate::slash_commands::errors::CommandError;
 use serenity::builder::CreateApplicationCommand;
 use serenity::model::application::command::CommandOptionType;
 use serenity::model::application::interaction::application_command::CommandDataOptionValue;
@@ -9,16 +10,20 @@ pub async fn execute(
     http: Arc<Http>,
     channel_id: ChannelId,
     command_interaction: &ApplicationCommandInteraction,
-) -> String {
+) -> Result<String, CommandError> {
     let u_amount: usize;
-    let amount = command_interaction
-        .data
-        .options
-        .get(0)
-        .expect("Prune: Expected amount option")
-        .resolved
-        .as_ref()
-        .expect("Prune: Expected amount option");
+
+    let amount = command_interaction.data.options.get(0);
+    let amount = match amount {
+        Some(a) => a,
+        None => return Err(CommandError::ArgumentMissing("Prune".to_string())),
+    };
+
+    let amount = amount.resolved.as_ref();
+    let amount = match amount {
+        Some(a) => a,
+        None => return Err(CommandError::ArgumentMissing("Prune".to_string())),
+    };
 
     if let CommandDataOptionValue::Integer(set_amount) = amount {
         if *set_amount < 0 {
@@ -27,7 +32,7 @@ pub async fn execute(
             u_amount = *set_amount as usize;
         }
     } else {
-        return "Please provide a valid amount".to_string();
+        return Ok("Please provide a valid amount".to_string());
     }
 
     let channel_id = ChannelId::from(channel_id);
@@ -42,7 +47,7 @@ pub async fn execute(
                     break;
                 };
             }
-            Err(error) => return error.to_string(),
+            Err(error) => return Err(CommandError::Other(error.to_string())),
         }
     }
 
@@ -51,10 +56,10 @@ pub async fn execute(
         .await
     {
         Ok(x) => x,
-        Err(e) => return e.to_string(),
+        Err(e) => return Err(CommandError::Other(e.to_string())),
     };
 
-    "Prune done!".to_string()
+    Ok("Prune done!".to_string())
 }
 
 pub fn setup(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {

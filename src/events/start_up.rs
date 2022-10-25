@@ -12,12 +12,12 @@ use std::env;
 
 use crate::redis_client;
 
-struct Guild {
+struct LocalGuild {
     list: HashMap<RoleId, Role>,
     guild_id: GuildId,
 }
 
-impl Guild {
+impl LocalGuild {
     async fn new(guild_id: &GuildId, ctx: &Context) -> Self {
         let guild_roles = guild_id
             .roles(&ctx.http)
@@ -60,7 +60,7 @@ pub async fn handle(ctx: Context, ready: Ready) {
     // Open a connection to Redis
     let mut connection = redis_client::connect();
 
-    let guild = Guild::new(&guild_id, &ctx).await;
+    let guild = LocalGuild::new(&guild_id, &ctx).await;
 
     guild.check_bot_admin_role(&mut connection, &ctx).await;
     guild.check_follower_role(&mut connection).await;
@@ -86,7 +86,7 @@ async fn register_commands(ctx: &Context, guild_id: &GuildId) {
     sc::utils::check_command_reg_verbose(guild_commands, global_command);
 }
 
-impl Guild {
+impl LocalGuild {
     async fn check_bot_admin_role(&self, connection: &mut redis::Connection, ctx: &Context) {
         // Attempt to query from Redis
         let bot_admin_role = redis_client::get_bot_role(connection);

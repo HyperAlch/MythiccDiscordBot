@@ -7,14 +7,22 @@ use serenity::model::prelude::interaction::application_command::ApplicationComma
 pub fn execute(
     command_interaction: &ApplicationCommandInteraction,
 ) -> Result<String, CommandError> {
-    let options = command_interaction
-        .data
-        .options
-        .get(0)
-        .expect("Expected user option")
-        .resolved
-        .as_ref()
-        .expect("Expected user object");
+    let options = command_interaction.data.options.get(0);
+    let options = match options {
+        Some(x) => x,
+        None => return Err(CommandError::ArgumentMissing("Get User ID".to_string())),
+    };
+
+    let options = options.resolved.as_ref();
+    let options = match options {
+        Some(x) => x,
+        None => {
+            return Err(CommandError::UnresolvedData(
+                "Get User ID".to_string(),
+                "Expected user object".to_string(),
+            ))
+        }
+    };
 
     if let CommandDataOptionValue::User(user, _member) = options {
         Ok(format!("{}'s id is {}", user.tag(), user.id))

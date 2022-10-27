@@ -1,3 +1,5 @@
+use crate::events::errors::GuildMemberAdditionError;
+use crate::utils::logging::log_error;
 use serenity::client::Context;
 use serenity::model::guild::Member;
 use serenity::model::prelude::RoleId;
@@ -9,7 +11,10 @@ pub async fn handle(ctx: Context, new_member: Member) {
 
     let mut connection = redis_client::connect();
 
-    give_follower_role(&mut new_member, &mut connection, &ctx).await;
+    match give_follower_role(&mut new_member, &mut connection, &ctx).await {
+        Ok(_) => {}
+        Err(error) => log_error(&error),
+    };
 
     // TODO: Logic for checking for a "log" channel ID and logging this
     // event to that channel.
@@ -19,20 +24,37 @@ async fn give_follower_role(
     new_member: &mut Member,
     connection: &mut redis::Connection,
     ctx: &Context,
-) {
+) -> Result<(), GuildMemberAdditionError> {
     let follower_role = match redis_client::get_follower_role(connection) {
         Ok(role_id_wrapped) => match role_id_wrapped {
             Some(role_id) => role_id,
-            None => panic!("Redis: Follower role resolved to none"),
+            None => {
+                return Err(GuildMemberAdditionError::RedisError(
+                    "Follower role resolved to none".to_string(),
+                ))
+            }
         },
-        Err(e) => {
-            panic!("{}", e);
+        Err(e) => return Err(GuildMemberAdditionError::RedisError(e.to_string())),
+    };
+
+    let follower_role: u64 = match follower_role.parse() {
+        Ok(x) => x,
+        Err(_) => {
+            return Err(GuildMemberAdditionError::InvalidData(
+                "Follower role ID".to_string(),
+            ))
         }
     };
 
-    let follower_role = RoleId(follower_role.parse().expect("Follower role ID invalid"))
-        .to_role_cached(&ctx.cache)
-        .expect("Cant't find follower role");
+    let follower_role = RoleId(follower_role).to_role_cached(&ctx.cache);
+    let follower_role = match follower_role {
+        Some(x) => x,
+        None => {
+            return Err(GuildMemberAdditionError::CacheError(
+                "Cant't find follower role".to_string(),
+            ))
+        }
+    };
 
     let success = new_member.add_role(&ctx.http, follower_role.id).await;
 
@@ -47,12 +69,12 @@ async fn give_follower_role(
     }
 
     if error_reason == "Missing Permissions" {
-        println!(
-            "Give the bot an Admin role and move it above the {} role",
-            follower_role.name
-        );
+        return Err(GuildMemberAdditionError::MissingPermissions);
     }
+
     if error_reason == "Missing Access" {
-        println!("Bot joined without Admin privileges. ");
+        return Err(GuildMemberAdditionError::MissingAccess);
     }
+
+    Ok(())
 }

@@ -41,3 +41,12 @@ pub fn set_follower_role(conn: &mut redis::Connection, role_id: String) -> redis
     let _: () = conn.set("follower role", role_id)?;
     Ok(())
 }
+
+pub fn get_log_channel(conn: &mut redis::Connection) -> Result<Option<String>, RedisError> {
+    let value: Option<String> = conn.get("log channel")?;
+    Ok(value)
+}
+pub fn set_log_channel(conn: &mut redis::Connection, channel_id: String) -> redis::RedisResult<()> {
+    let _: () = conn.set("log channel", channel_id)?;
+    Ok(())
+}

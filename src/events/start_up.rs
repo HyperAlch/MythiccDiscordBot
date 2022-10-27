@@ -2,7 +2,7 @@ use serenity::client::Context;
 use serenity::model::gateway::Ready;
 use serenity::model::id::GuildId;
 use serenity::model::permissions::Permissions;
-use serenity::model::prelude::{Role, RoleId};
+use serenity::model::prelude::{ChannelId, GuildChannel, Role, RoleId};
 
 use crate::slash_commands as sc;
 
@@ -13,7 +13,8 @@ use std::env;
 use crate::redis_client;
 
 struct LocalGuild {
-    list: HashMap<RoleId, Role>,
+    role_list: HashMap<RoleId, Role>,
+    channel_list: HashMap<ChannelId, GuildChannel>,
     guild_id: GuildId,
 }
 
@@ -24,22 +25,38 @@ impl LocalGuild {
             .await
             .expect("Query to retrieve guild roles failed");
 
+        let guild_channels = guild_id
+            .channels(&ctx.http)
+            .await
+            .expect("Query to retrieve guild channels failed");
+
         Self {
-            list: guild_roles,
+            role_list: guild_roles,
+            channel_list: guild_channels,
             guild_id: *guild_id,
         }
     }
+
     fn role_exists_from_str(&self, role_id: &String) -> bool {
         let role_id_u64: u64 = role_id
             .parse()
             .expect(&format!("{} cannot be parsed into u64", role_id)[..]);
         self.role_exists_from_u64(&role_id_u64)
     }
+
     fn role_exists_from_u64(&self, role_id: &u64) -> bool {
         self.role_exists(&RoleId(*role_id))
     }
+
     fn role_exists(&self, role_id: &RoleId) -> bool {
-        match self.list.get(role_id) {
+        match self.role_list.get(role_id) {
+            Some(_) => true,
+            None => false,
+        }
+    }
+
+    fn channel_exists(&self, channel_id: &ChannelId) -> bool {
+        match self.channel_list.get(channel_id) {
             Some(_) => true,
             None => false,
         }
@@ -64,6 +81,7 @@ pub async fn handle(ctx: Context, ready: Ready) {
 
     guild.check_bot_admin_role(&mut connection, &ctx).await;
     guild.check_follower_role(&mut connection).await;
+    guild.check_log_channel(&mut connection).await;
 
     register_commands(&ctx, &guild_id).await;
 }
@@ -74,6 +92,7 @@ async fn register_commands(ctx: &Context, guild_id: &GuildId) {
         commands
             .create_application_command(|command| sc::prune::setup(command))
             .create_application_command(|command| sc::get_user_id::setup(command))
+            .create_application_command(|command| sc::test_log_channel::setup(command))
     })
     .await;
 
@@ -155,12 +174,32 @@ impl LocalGuild {
         if self.role_exists(&follower_id) {
             println!("Follower role found: {}", follower_id.to_string());
         } else {
-            panic!("Follower role not in guild, please add one!")
+            panic!("Follower role not in guild, please add one!");
         }
 
         match redis_client::set_follower_role(connection, follower_id.to_string()) {
             Ok(_) => (),
-            Err(e) => println!("{}", e),
+            Err(e) => panic!("{}", e),
+        }
+    }
+
+    async fn check_log_channel(&self, connection: &mut redis::Connection) {
+        let log_channel_id = ChannelId(
+            env::var("LOG_CHANNEL_ID")
+                .expect("Expected LOG_CHANNEL_ID in environment")
+                .parse()
+                .expect("LOG_CHANNEL_ID must be an integer"),
+        );
+
+        if self.channel_exists(&log_channel_id) {
+            println!("Log channel found: {}", log_channel_id.to_string());
+        } else {
+            panic!("Log channel not found, please add one!");
+        }
+
+        match redis_client::set_log_channel(connection, log_channel_id.to_string()) {
+            Ok(_) => (),
+            Err(e) => panic!("{}", e),
         }
     }
 }

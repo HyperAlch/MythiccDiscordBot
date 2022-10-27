@@ -1,5 +1,6 @@
 use crate::slash_commands as sc;
 use crate::slash_commands::errors::CommandError;
+use crate::utils::logging::log_error;
 use serenity::model::application::interaction::application_command::ApplicationCommandInteraction;
 use serenity::model::application::interaction::{Interaction, InteractionResponseType};
 use serenity::prelude::*;
@@ -13,6 +14,7 @@ pub async fn handle(ctx: Context, interaction: Interaction) {
             "prune" => sc::prune::execute(ctx.http.to_owned(), command.channel_id, &command).await,
             "ping" => sc::ping::execute(&mut is_ephemeral),
             "get-user-id" => sc::get_user_id::execute(&command),
+            "test-log-channel" => sc::test_log_channel::execute(&mut is_ephemeral, &ctx).await,
 
             _ => Ok("Command removed or not implemented".to_string()),
         };
@@ -47,10 +49,6 @@ async fn create_response(
     {
         println!("Cannot respond to slash command: {}", why);
     }
-}
-
-fn log_error(error: &CommandError) {
-    println!("{}", error);
 }
 
 fn match_error(error: CommandError) -> String {

@@ -54,6 +54,7 @@ async fn create_response(
 fn match_error(error: CommandError) -> String {
     match error {
         CommandError::ArgumentMissing(_) => "Missing an option...".to_string(),
+        CommandError::RedisError(content) => content,
         CommandError::Other(content) => content,
         CommandError::UnresolvedData(_, content) => content,
     }

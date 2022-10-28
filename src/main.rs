@@ -9,6 +9,8 @@ use serenity::model::guild::Member;
 use serenity::model::application::interaction::Interaction;
 use serenity::model::gateway::Ready;
 
+use serenity::model::prelude::GuildId;
+use serenity::model::user::User;
 use serenity::prelude::*;
 struct Handler;
 
@@ -20,6 +22,20 @@ impl EventHandler for Handler {
 
     async fn guild_member_addition(&self, ctx: Context, new_member: Member) {
         events::guild_member_addition::handle(ctx, new_member).await;
+    }
+
+    async fn guild_member_removal(
+        &self,
+        ctx: Context,
+        guild_id: GuildId,
+        user: User,
+        member_data: Option<Member>,
+    ) {
+        events::guild_member_removal::handle(ctx, guild_id, user, member_data).await;
+    }
+
+    async fn guild_ban_addition(&self, ctx: Context, guild_id: GuildId, banned_user: User) {
+        events::guild_ban_addition::handle(ctx, guild_id, banned_user).await;
     }
 
     async fn ready(&self, ctx: Context, ready: Ready) {
@@ -36,6 +52,7 @@ async fn main() {
     let intents = GatewayIntents::GUILDS
         | GatewayIntents::GUILD_MESSAGES
         | GatewayIntents::MESSAGE_CONTENT
+        | GatewayIntents::GUILD_BANS
         | GatewayIntents::GUILD_MEMBERS;
 
     // Build our client.

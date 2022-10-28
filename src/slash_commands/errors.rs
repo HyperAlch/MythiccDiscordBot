@@ -7,8 +7,13 @@ type ErrorMessage = String;
 pub enum CommandError {
     #[error("{0}: Expected option(s)")]
     ArgumentMissing(SlashCommandName),
+
     #[error("{0}: {1}")]
     UnresolvedData(SlashCommandName, ErrorMessage),
+
+    #[error("Redis: {0}")]
+    RedisError(ErrorMessage),
+
     #[error("Error: `{0}`")]
     Other(ErrorMessage),
 }

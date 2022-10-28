@@ -1,4 +1,5 @@
 use crate::events::errors::GuildMemberAdditionError;
+use crate::log_channel::log_user_joined;
 use crate::utils::logging::log_error;
 use serenity::client::Context;
 use serenity::model::guild::Member;
@@ -13,6 +14,12 @@ pub async fn handle(ctx: Context, new_member: Member) {
 
     match give_follower_role(&mut new_member, &mut connection, &ctx).await {
         Ok(_) => {}
+        Err(error) => log_error(&error),
+    };
+
+    let user_id = new_member.user.id;
+    match log_user_joined(&user_id, &ctx).await {
+        Ok(_) => (),
         Err(error) => log_error(&error),
     };
 

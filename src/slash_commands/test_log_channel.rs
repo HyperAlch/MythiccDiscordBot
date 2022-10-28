@@ -1,17 +1,40 @@
+use crate::redis_client;
 use crate::slash_commands::errors::CommandError;
 use crate::utils::discord_cdn::get_avatar_url;
-use chrono::prelude::*;
-use chrono::{DateTime, Utc};
+use crate::utils::time::date_diff;
+use chrono::Utc;
 use serenity::builder::{CreateApplicationCommand, CreateEmbedAuthor, CreateEmbedFooter};
 use serenity::client::Context;
 use serenity::model::id::{ChannelId, UserId};
-use serenity::model::Timestamp;
 
 pub async fn execute(is_ephemeral: &mut bool, ctx: &Context) -> Result<String, CommandError> {
     *is_ephemeral = true;
 
-    let channel_id = ChannelId(1034987566245621780);
     let user_id = UserId(224597366324461568);
+
+    let mut conn = redis_client::connect();
+
+    // Query and unpack the log channel id from Redis
+    let channel_id = match redis_client::get_log_channel(&mut conn) {
+        Ok(value) => match value {
+            Some(value) => match value.parse::<u64>() {
+                Ok(value) => value,
+                Err(_) => {
+                    return Err(CommandError::Other(
+                        "Could not parse log channel id into u64".to_string(),
+                    ))
+                }
+            },
+            None => {
+                return Err(CommandError::RedisError(
+                    "Could not resolve log channel id".to_string(),
+                ))
+            }
+        },
+        Err(e) => return Err(CommandError::Other(e.to_string())),
+    };
+
+    let channel_id = ChannelId(channel_id);
 
     let user = match user_id.to_user(&ctx.http).await {
         Ok(x) => x,
@@ -55,31 +78,4 @@ pub fn setup(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCo
     command
         .name("test-log-channel")
         .description("Send an embedded message to the log channel")
-}
-
-fn date_diff(date: &Timestamp) -> String {
-    let today = Utc::now();
-
-    // Check if we can access 0..10 before getting it
-    let str_length = date.to_string().len();
-    assert!(str_length >= 10);
-
-    // Get only the date, not the time
-    let date = &date.to_string()[0..10];
-
-    let datetime = DateTime::<Utc>::from_utc(
-        chrono::NaiveDate::parse_from_str(&date.to_string(), "%Y-%m-%d")
-            .unwrap()
-            .and_hms(0, 0, 0),
-        Utc,
-    );
-
-    let diff = today.signed_duration_since(datetime);
-    let days = diff.num_days();
-    let years = days / 365;
-    let remaining_days = days % 365;
-    let months = remaining_days / 30;
-    let days = remaining_days % 30;
-
-    format!("{} years {} months {} days", years, months, days)
 }

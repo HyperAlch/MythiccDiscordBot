@@ -42,11 +42,28 @@ pub fn set_follower_role(conn: &mut redis::Connection, role_id: String) -> redis
     Ok(())
 }
 
-pub fn get_log_channel(conn: &mut redis::Connection) -> Result<Option<String>, RedisError> {
-    let value: Option<String> = conn.get("log channel")?;
+pub fn get_major_log_channel(conn: &mut redis::Connection) -> Result<Option<String>, RedisError> {
+    let value: Option<String> = conn.get("major log channel")?;
     Ok(value)
 }
-pub fn set_log_channel(conn: &mut redis::Connection, channel_id: String) -> redis::RedisResult<()> {
-    let _: () = conn.set("log channel", channel_id)?;
+
+pub fn set_major_log_channel(
+    conn: &mut redis::Connection,
+    channel_id: String,
+) -> redis::RedisResult<()> {
+    let _: () = conn.set("major log channel", channel_id)?;
+    Ok(())
+}
+
+pub fn get_minor_log_channel(conn: &mut redis::Connection) -> Result<Option<String>, RedisError> {
+    let value: Option<String> = conn.get("minor log channel")?;
+    Ok(value)
+}
+
+pub fn set_minor_log_channel(
+    conn: &mut redis::Connection,
+    channel_id: String,
+) -> redis::RedisResult<()> {
+    let _: () = conn.set("minor log channel", channel_id)?;
     Ok(())
 }

@@ -21,12 +21,53 @@ pub enum LogChannelError {
     Other(ErrorMessage),
 }
 
-// pub async fn handle(ctx: Context, guild_id: GuildId, banned_user: User) {}
+const GREEN: i32 = 0x50C878;
+const RED: i32 = 0xFF0000;
+
+pub async fn log_user_unbanned(unbanned_user: &User, ctx: &Context) -> Result<(), LogChannelError> {
+    let mut conn = redis_client::connect();
+
+    let channel_id = unpack_major_channel_id(&mut conn)?;
+
+    let user = unbanned_user;
+
+    let success = channel_id
+        .send_message(&ctx.http, |m| {
+            m.embed(|e| {
+                let mut author = CreateEmbedAuthor::default();
+                author.icon_url(get_avatar_url(&user));
+                author.name(user.name.clone());
+
+                let mut footer = CreateEmbedFooter::default();
+                footer.text(format!("ID: {}", user.id));
+
+                let account_age = date_diff(&user.created_at());
+
+                e.title("Member Unbanned")
+                    .color(GREEN)
+                    .description(format!(
+                        "<@{}> - {}#{}",
+                        user.id, user.name, user.discriminator
+                    ))
+                    .image("https://i.ibb.co/7nqVFKd/unbanned.png")
+                    .timestamp(Utc::now())
+                    .set_author(author)
+                    .field("Account Age", account_age, true)
+                    .set_footer(footer)
+            })
+        })
+        .await;
+
+    match success {
+        Ok(_) => return Ok(()),
+        Err(e) => return Err(LogChannelError::Other(e.to_string())),
+    };
+}
 
 pub async fn log_user_banned(banned_user: &User, ctx: &Context) -> Result<(), LogChannelError> {
     let mut conn = redis_client::connect();
 
-    let channel_id = unpack_channel_id(&mut conn)?;
+    let channel_id = unpack_major_channel_id(&mut conn)?;
 
     let user = banned_user;
 
@@ -43,7 +84,7 @@ pub async fn log_user_banned(banned_user: &User, ctx: &Context) -> Result<(), Lo
                 let account_age = date_diff(&user.created_at());
 
                 e.title("Member Banned")
-                    .color(0xFF0000)
+                    .color(RED)
                     .description(format!(
                         "<@{}> - {}#{}",
                         user.id, user.name, user.discriminator
@@ -71,7 +112,7 @@ pub async fn log_user_joined(user_id: &UserId, ctx: &Context) -> Result<(), LogC
         Err(e) => return Err(LogChannelError::Other(e.to_string())),
     };
 
-    let channel_id = unpack_channel_id(&mut conn)?;
+    let channel_id = unpack_major_channel_id(&mut conn)?;
 
     let success = channel_id
         .send_message(&ctx.http, |m| {
@@ -86,7 +127,7 @@ pub async fn log_user_joined(user_id: &UserId, ctx: &Context) -> Result<(), LogC
                 let account_age = date_diff(&user.created_at());
 
                 e.title("Member Joined")
-                    .color(0x50C878)
+                    .color(GREEN)
                     .description(format!(
                         "<@{}> - {}#{}",
                         user.id, user.name, user.discriminator
@@ -109,7 +150,7 @@ pub async fn log_user_joined(user_id: &UserId, ctx: &Context) -> Result<(), LogC
 pub async fn log_user_left(user: &User, ctx: &Context) -> Result<(), LogChannelError> {
     let mut conn = redis_client::connect();
 
-    let channel_id = unpack_channel_id(&mut conn)?;
+    let channel_id = unpack_major_channel_id(&mut conn)?;
 
     let success = channel_id
         .send_message(&ctx.http, |m| {
@@ -124,7 +165,7 @@ pub async fn log_user_left(user: &User, ctx: &Context) -> Result<(), LogChannelE
                 let account_age = date_diff(&user.created_at());
 
                 e.title("Member Left")
-                    .color(0xFF0000)
+                    .color(RED)
                     .description(format!(
                         "<@{}> - {}#{}",
                         user.id, user.name, user.discriminator
@@ -144,21 +185,45 @@ pub async fn log_user_left(user: &User, ctx: &Context) -> Result<(), LogChannelE
     };
 }
 
-fn unpack_channel_id(conn: &mut Connection) -> Result<ChannelId, LogChannelError> {
+fn unpack_major_channel_id(conn: &mut Connection) -> Result<ChannelId, LogChannelError> {
     // Query and unpack the log channel id from Redis
-    let channel_id = match redis_client::get_log_channel(conn) {
+    let channel_id = match redis_client::get_major_log_channel(conn) {
         Ok(value) => match value {
             Some(value) => match value.parse::<u64>() {
                 Ok(value) => value,
                 Err(_) => {
                     return Err(LogChannelError::Other(
-                        "Could not parse log channel id into u64".to_string(),
+                        "Could not parse major log channel id into u64".to_string(),
                     ))
                 }
             },
             None => {
                 return Err(LogChannelError::RedisError(
-                    "Could not resolve log channel id".to_string(),
+                    "Could not resolve major log channel id".to_string(),
+                ))
+            }
+        },
+        Err(e) => return Err(LogChannelError::Other(e.to_string())),
+    };
+
+    Ok(ChannelId(channel_id))
+}
+
+fn unpack_minor_channel_id(conn: &mut Connection) -> Result<ChannelId, LogChannelError> {
+    // Query and unpack the log channel id from Redis
+    let channel_id = match redis_client::get_minor_log_channel(conn) {
+        Ok(value) => match value {
+            Some(value) => match value.parse::<u64>() {
+                Ok(value) => value,
+                Err(_) => {
+                    return Err(LogChannelError::Other(
+                        "Could not parse minor log channel id into u64".to_string(),
+                    ))
+                }
+            },
+            None => {
+                return Err(LogChannelError::RedisError(
+                    "Could not resolve minor log channel id".to_string(),
                 ))
             }
         },

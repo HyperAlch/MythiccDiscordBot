@@ -38,6 +38,10 @@ impl EventHandler for Handler {
         events::guild_ban_addition::handle(ctx, guild_id, banned_user).await;
     }
 
+    async fn guild_ban_removal(&self, ctx: Context, guild_id: GuildId, unbanned_user: User) {
+        events::guild_ban_removal::handle(ctx, guild_id, unbanned_user).await;
+    }
+
     async fn ready(&self, ctx: Context, ready: Ready) {
         events::start_up::handle(ctx, ready).await;
     }

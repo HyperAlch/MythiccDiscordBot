@@ -125,6 +125,7 @@ impl LocalGuild {
             Err(e) => panic!("{}", e),
         }
     }
+
     async fn create_bot_admin_role(&self, connection: &mut redis::Connection, ctx: &Context) {
         println!("Starting Bot Admin Role Creation Process...");
 
@@ -163,6 +164,7 @@ impl LocalGuild {
             Err(e) => panic!("{}", e),
         }
     }
+
     async fn check_follower_role(&self, connection: &mut redis::Connection) {
         let follower_id = RoleId(
             env::var("ROLE_FOLLOWER_ID")
@@ -184,20 +186,44 @@ impl LocalGuild {
     }
 
     async fn check_log_channel(&self, connection: &mut redis::Connection) {
-        let log_channel_id = ChannelId(
-            env::var("LOG_CHANNEL_ID")
-                .expect("Expected LOG_CHANNEL_ID in environment")
+        let major_log_channel_id = ChannelId(
+            env::var("MAJOR_LOG_CHANNEL_ID")
+                .expect("Expected MAJOR_LOG_CHANNEL_ID in environment")
                 .parse()
-                .expect("LOG_CHANNEL_ID must be an integer"),
+                .expect("MAJOR_LOG_CHANNEL_ID must be an integer"),
         );
 
-        if self.channel_exists(&log_channel_id) {
-            println!("Log channel found: {}", log_channel_id.to_string());
+        let minor_log_channel_id = ChannelId(
+            env::var("MINOR_LOG_CHANNEL_ID")
+                .expect("Expected MINOR_LOG_CHANNEL_ID in environment")
+                .parse()
+                .expect("MINOR_LOG_CHANNEL_ID must be an integer"),
+        );
+
+        if self.channel_exists(&major_log_channel_id) {
+            println!(
+                "Major log channel found: {}",
+                major_log_channel_id.to_string()
+            );
         } else {
-            panic!("Log channel not found, please add one!");
+            panic!("Major log channel not found, please add one!");
         }
 
-        match redis_client::set_log_channel(connection, log_channel_id.to_string()) {
+        if self.channel_exists(&minor_log_channel_id) {
+            println!(
+                "Minor log channel found: {}",
+                minor_log_channel_id.to_string()
+            );
+        } else {
+            panic!("Minor log channel not found, please add one!");
+        }
+
+        match redis_client::set_major_log_channel(connection, major_log_channel_id.to_string()) {
+            Ok(_) => (),
+            Err(e) => panic!("{}", e),
+        }
+
+        match redis_client::set_minor_log_channel(connection, minor_log_channel_id.to_string()) {
             Ok(_) => (),
             Err(e) => panic!("{}", e),
         }

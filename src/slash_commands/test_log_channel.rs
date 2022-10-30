@@ -15,7 +15,7 @@ pub async fn execute(is_ephemeral: &mut bool, ctx: &Context) -> Result<String, C
     let mut conn = redis_client::connect();
 
     // Query and unpack the log channel id from Redis
-    let channel_id = match redis_client::get_log_channel(&mut conn) {
+    let channel_id = match redis_client::get_major_log_channel(&mut conn) {
         Ok(value) => match value {
             Some(value) => match value.parse::<u64>() {
                 Ok(value) => value,

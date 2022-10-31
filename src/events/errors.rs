@@ -22,3 +22,12 @@ pub enum GuildMemberAdditionError {
     #[error("Guild Member Addition Error: `{0}`")]
     Other(ErrorMessage),
 }
+
+#[derive(Error, Debug)]
+pub enum VoiceStateUpdateError {
+    #[error("Voice State Update Error: Data Missing - `{0}`")]
+    DataMissing(ErrorMessage),
+
+    #[error("Voice State Update Error: `{0}`")]
+    Other(ErrorMessage),
+}

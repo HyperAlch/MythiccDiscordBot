@@ -23,6 +23,142 @@ pub enum LogChannelError {
 
 const GREEN: i32 = 0x50C878;
 const RED: i32 = 0xFF0000;
+const YELLOW: i32 = 0xFFFF00;
+
+pub async fn log_voice_chat_moved(
+    user: User,
+    old_voice_chat_id: ChannelId,
+    new_voice_chat_id: ChannelId,
+    ctx: &Context,
+) -> Result<(), LogChannelError> {
+    let mut conn = redis_client::connect();
+
+    let channel_id = unpack_minor_channel_id(&mut conn)?;
+
+    let success = channel_id
+        .send_message(&ctx.http, |m| {
+            m.embed(|e| {
+                let mut author = CreateEmbedAuthor::default();
+                author.icon_url(get_avatar_url(&user));
+                author.name(user.name.clone());
+
+                let mut footer = CreateEmbedFooter::default();
+                footer.text(format!("ID: {}", user.id));
+
+                e.title("Moved Voice Chat")
+                    .color(YELLOW)
+                    .description(format!(
+                        "<@{}> left voice channel  <#{}>\n<@{}> joined voice channel  <#{}>",
+                        user.id,
+                        old_voice_chat_id.to_string(),
+                        user.id,
+                        new_voice_chat_id.to_string()
+                    ))
+                    .timestamp(Utc::now())
+                    .set_author(author)
+                    .field(
+                        "Username",
+                        format!("{}#{}", user.name, user.discriminator),
+                        true,
+                    )
+                    .set_footer(footer)
+            })
+        })
+        .await;
+
+    match success {
+        Ok(_) => return Ok(()),
+        Err(e) => return Err(LogChannelError::Other(e.to_string())),
+    };
+}
+
+pub async fn log_voice_chat_left(
+    user: User,
+    voice_chat_id: ChannelId,
+    ctx: &Context,
+) -> Result<(), LogChannelError> {
+    let mut conn = redis_client::connect();
+
+    let channel_id = unpack_minor_channel_id(&mut conn)?;
+
+    let success = channel_id
+        .send_message(&ctx.http, |m| {
+            m.embed(|e| {
+                let mut author = CreateEmbedAuthor::default();
+                author.icon_url(get_avatar_url(&user));
+                author.name(user.name.clone());
+
+                let mut footer = CreateEmbedFooter::default();
+                footer.text(format!("ID: {}", user.id));
+
+                e.title("Left Voice Chat")
+                    .color(RED)
+                    .description(format!(
+                        "<@{}> left voice channel  <#{}>",
+                        user.id,
+                        voice_chat_id.to_string()
+                    ))
+                    .timestamp(Utc::now())
+                    .set_author(author)
+                    .field(
+                        "Username",
+                        format!("{}#{}", user.name, user.discriminator),
+                        true,
+                    )
+                    .set_footer(footer)
+            })
+        })
+        .await;
+
+    match success {
+        Ok(_) => return Ok(()),
+        Err(e) => return Err(LogChannelError::Other(e.to_string())),
+    };
+}
+
+pub async fn log_voice_chat_joined(
+    user: User,
+    voice_chat_id: ChannelId,
+    ctx: &Context,
+) -> Result<(), LogChannelError> {
+    let mut conn = redis_client::connect();
+
+    let channel_id = unpack_minor_channel_id(&mut conn)?;
+
+    let success = channel_id
+        .send_message(&ctx.http, |m| {
+            m.embed(|e| {
+                let mut author = CreateEmbedAuthor::default();
+                author.icon_url(get_avatar_url(&user));
+                author.name(user.name.clone());
+
+                let mut footer = CreateEmbedFooter::default();
+                footer.text(format!("ID: {}", user.id));
+
+                e.title("Joined Voice Chat")
+                    .color(GREEN)
+                    .description(format!(
+                        "<@{}> joined voice channel  <#{}>",
+                        user.id,
+                        voice_chat_id.to_string()
+                    ))
+                    .timestamp(Utc::now())
+                    .set_author(author)
+                    .field(
+                        "Username",
+                        format!("{}#{}", user.name, user.discriminator),
+                        true,
+                    )
+                    .set_footer(footer)
+            })
+        })
+        .await;
+
+    match success {
+        Ok(_) => return Ok(()),
+        Err(e) => return Err(LogChannelError::Other(e.to_string())),
+    };
+}
 
 pub async fn log_user_unbanned(unbanned_user: &User, ctx: &Context) -> Result<(), LogChannelError> {
     let mut conn = redis_client::connect();

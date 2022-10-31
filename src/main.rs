@@ -11,6 +11,7 @@ use serenity::model::gateway::Ready;
 
 use serenity::model::prelude::GuildId;
 use serenity::model::user::User;
+use serenity::model::voice::VoiceState;
 use serenity::prelude::*;
 struct Handler;
 
@@ -42,6 +43,14 @@ impl EventHandler for Handler {
         events::guild_ban_removal::handle(ctx, guild_id, unbanned_user).await;
     }
 
+    async fn voice_state_update(&self, ctx: Context, old: Option<VoiceState>, new: VoiceState) {
+        events::voice_state_update::handle(ctx, old, new).await;
+    }
+
+    async fn cache_ready(&self, _ctx: Context, _guilds: Vec<GuildId>) {
+        println!("Cache Ready...");
+    }
+
     async fn ready(&self, ctx: Context, ready: Ready) {
         events::start_up::handle(ctx, ready).await;
     }
@@ -56,6 +65,7 @@ async fn main() {
     let intents = GatewayIntents::GUILDS
         | GatewayIntents::GUILD_MESSAGES
         | GatewayIntents::MESSAGE_CONTENT
+        | GatewayIntents::GUILD_VOICE_STATES
         | GatewayIntents::GUILD_BANS
         | GatewayIntents::GUILD_MEMBERS;
 

@@ -15,6 +15,7 @@ pub async fn handle(ctx: Context, interaction: Interaction) {
             "ping" => sc::ping::execute(&mut is_ephemeral),
             "get-user-id" => sc::get_user_id::execute(&command),
             "test-log-channel" => sc::test_log_channel::execute(&mut is_ephemeral, &ctx).await,
+            "test-give-roles" => sc::test_give_roles::execute(&command, &ctx).await,
 
             _ => Ok("Command removed or not implemented".to_string()),
         };

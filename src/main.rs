@@ -47,6 +47,35 @@ impl EventHandler for Handler {
         events::voice_state_update::handle(ctx, old, new).await;
     }
 
+    async fn guild_member_update(
+        &self,
+        _ctx: Context,
+        old_if_available: Option<Member>,
+        new: Member,
+    ) {
+        let old_roles_state = old_if_available.unwrap().roles;
+        let new_roles_state = new.roles;
+
+        let mut new_roles = Vec::new();
+        let mut old_roles = Vec::new();
+
+        for x in new_roles_state.iter() {
+            if !old_roles_state.contains(&x) {
+                new_roles.push(x);
+            }
+        }
+
+        for x in old_roles_state.iter() {
+            if !new_roles_state.contains(&x) {
+                old_roles.push(x);
+            }
+        }
+
+        println!("Member Role Updated...");
+        println!("Give roles {:?}", new_roles);
+        println!("Taken roles {:?}", old_roles);
+    }
+
     async fn cache_ready(&self, _ctx: Context, _guilds: Vec<GuildId>) {
         println!("Cache Ready...");
     }
@@ -67,6 +96,7 @@ async fn main() {
         | GatewayIntents::MESSAGE_CONTENT
         | GatewayIntents::GUILD_VOICE_STATES
         | GatewayIntents::GUILD_BANS
+        | GatewayIntents::GUILD_PRESENCES
         | GatewayIntents::GUILD_MEMBERS;
 
     // Build our client.

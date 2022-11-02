@@ -37,6 +37,16 @@ pub fn get_follower_role(conn: &mut redis::Connection) -> Result<Option<String>,
     Ok(value)
 }
 
+pub fn set_guild_id(conn: &mut redis::Connection, guild_id: String) -> redis::RedisResult<()> {
+    let _: () = conn.set("guild id", guild_id)?;
+    Ok(())
+}
+
+pub fn get_guild_id(conn: &mut redis::Connection) -> Result<Option<String>, RedisError> {
+    let value: Option<String> = conn.get("guild id")?;
+    Ok(value)
+}
+
 pub fn set_follower_role(conn: &mut redis::Connection, role_id: String) -> redis::RedisResult<()> {
     let _: () = conn.set("follower role", role_id)?;
     Ok(())

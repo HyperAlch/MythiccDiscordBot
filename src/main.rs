@@ -71,7 +71,6 @@ impl EventHandler for Handler {
             }
         }
 
-        
         println!("Member Role Updated...");
         println!("Give roles {:?}", new_roles);
         println!("Taken roles {:?}", old_roles);

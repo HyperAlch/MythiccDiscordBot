@@ -8,4 +8,4 @@ services:
     environment:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
     volumes:
-      - './redis-AOF:/bitnami'
+      - 'mythicc_bot_redis_aof:/bitnami'

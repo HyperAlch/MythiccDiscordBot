@@ -47,19 +47,22 @@ pub async fn log_voice_chat_moved(
 
                 e.title("Moved Voice Chat")
                     .color(YELLOW)
-                    .description(format!(
-                        "<@{}> left voice channel  <#{}>\n<@{}> joined voice channel  <#{}>",
-                        user.id,
-                        old_voice_chat_id.to_string(),
-                        user.id,
-                        new_voice_chat_id.to_string()
-                    ))
                     .timestamp(Utc::now())
                     .set_author(author)
                     .field(
-                        "Username",
-                        format!("{}#{}", user.name, user.discriminator),
+                        "Left",
+                        format!("<#{}>", old_voice_chat_id.to_string()),
                         true,
+                    )
+                    .field(
+                        "Joined",
+                        format!("<#{}>", new_voice_chat_id.to_string()),
+                        true,
+                    )
+                    .field(
+                        "Username",
+                        format!("<@{}> - {}#{}", user.id, user.name, user.discriminator),
+                        false,
                     )
                     .set_footer(footer)
             })
@@ -147,6 +150,7 @@ pub async fn log_roles_updated(
 
                 e.title("Roles Updated")
                     .color(YELLOW)
+                    .description("🔄 🔄 🔄")
                     .field("New Roles: ", new_roles, true)
                     .field("Removed Roles: ", old_roles, true)
                     .timestamp(Utc::now())

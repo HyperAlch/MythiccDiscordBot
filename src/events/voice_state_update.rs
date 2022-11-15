@@ -47,7 +47,7 @@ pub async fn send_log(ctx: Context, log_type: VoiceAction, data: LogData) {
             Err(e) => log_error(&e),
         },
         VoiceAction::UserMovedChannel => {
-            match log_voice_chat_moved(data.0, data.1[0], data.1[1], &ctx).await {
+            match log_voice_chat_moved(data.0, data.1[1], data.1[0], &ctx).await {
                 Ok(_) => {}
                 Err(e) => log_error(&e),
             }

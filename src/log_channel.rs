@@ -115,7 +115,57 @@ pub async fn log_voice_chat_left(
         Err(e) => return Err(LogChannelError::Other(e.to_string())),
     };
 }
+pub async fn log_roles_updated(
+    user: User,
+    new_roles: Vec<String>,
+    old_roles: Vec<String>,
+    ctx: &Context,
+) -> Result<(), LogChannelError> {
+    let mut conn = redis_client::connect();
 
+    let channel_id = unpack_major_channel_id(&mut conn)?;
+
+    let old_roles = match old_roles.len() {
+        0 => "None".to_string(),
+        _ => old_roles.join(" "),
+    };
+
+    let new_roles = match new_roles.len() {
+        0 => "None".to_string(),
+        _ => new_roles.join(" "),
+    };
+
+    let success = channel_id
+        .send_message(&ctx.http, |m| {
+            m.embed(|e| {
+                let mut author = CreateEmbedAuthor::default();
+                author.icon_url(get_avatar_url(&user));
+                author.name(user.name.clone());
+
+                let mut footer = CreateEmbedFooter::default();
+                footer.text(format!("ID: {}", user.id));
+
+                e.title("Roles Updated")
+                    .color(YELLOW)
+                    .field("New Roles: ", new_roles, true)
+                    .field("Removed Roles: ", old_roles, true)
+                    .timestamp(Utc::now())
+                    .set_author(author)
+                    .field(
+                        "Username",
+                        format!("<@{}> - {}#{}", user.id, user.name, user.discriminator),
+                        false,
+                    )
+                    .set_footer(footer)
+            })
+        })
+        .await;
+
+    match success {
+        Ok(_) => return Ok(()),
+        Err(e) => return Err(LogChannelError::Other(e.to_string())),
+    };
+}
 pub async fn log_voice_chat_joined(
     user: User,
     voice_chat_id: ChannelId,

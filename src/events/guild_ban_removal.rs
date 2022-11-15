@@ -5,7 +5,7 @@ use serenity::prelude::*;
 
 pub async fn handle(ctx: Context, _guild_id: GuildId, unbanned_user: User) {
     match log_user_unbanned(&unbanned_user, &ctx).await {
-        Ok(_) => (),
+        Ok(_) => {}
         Err(error) => log_error(&error),
     };
 }

@@ -63,6 +63,8 @@ pub async fn execute(is_ephemeral: &mut bool, ctx: &Context) -> Result<String, C
                     .timestamp(Utc::now())
                     .set_author(author)
                     .field("Account Age", account_age, true)
+                    .field("Roles Given: ", "<@&888565264705273886>", false)
+                    .field("Roles Taken: ", "<@&888565264705273886>", false)
                     .set_footer(footer)
             })
         })

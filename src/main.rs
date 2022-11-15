@@ -49,31 +49,11 @@ impl EventHandler for Handler {
 
     async fn guild_member_update(
         &self,
-        _ctx: Context,
+        ctx: Context,
         old_if_available: Option<Member>,
         new: Member,
     ) {
-        let old_roles_state = old_if_available.unwrap().roles;
-        let new_roles_state = new.roles;
-
-        let mut new_roles = Vec::new();
-        let mut old_roles = Vec::new();
-
-        for x in new_roles_state.iter() {
-            if !old_roles_state.contains(&x) {
-                new_roles.push(x);
-            }
-        }
-
-        for x in old_roles_state.iter() {
-            if !new_roles_state.contains(&x) {
-                old_roles.push(x);
-            }
-        }
-
-        println!("Member Role Updated...");
-        println!("Give roles {:?}", new_roles);
-        println!("Taken roles {:?}", old_roles);
+        events::guild_member_update::handle(old_if_available, new, &ctx).await;
     }
 
     async fn cache_ready(&self, _ctx: Context, _guilds: Vec<GuildId>) {

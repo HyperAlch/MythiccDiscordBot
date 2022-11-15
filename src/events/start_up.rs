@@ -94,7 +94,7 @@ async fn register_commands(ctx: &Context, guild_id: &GuildId) {
         commands
             .create_application_command(|command| sc::prune::setup(command))
             .create_application_command(|command| sc::get_user_id::setup(command))
-            // .create_application_command(|command| sc::test_log_channel::setup(command))
+            .create_application_command(|command| sc::test_log_channel::setup(command))
             .create_application_command(|command| sc::test_give_roles::setup(command))
     })
     .await;

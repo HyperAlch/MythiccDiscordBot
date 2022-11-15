@@ -38,17 +38,17 @@ pub async fn send_log(ctx: Context, log_type: VoiceAction, data: LogData) {
     match log_type {
         VoiceAction::UserJoinedChannel => {
             match log_voice_chat_joined(data.0, data.1[0], &ctx).await {
-                Ok(x) => x,
+                Ok(_) => {}
                 Err(e) => log_error(&e),
             }
         }
         VoiceAction::UserLeftChannel => match log_voice_chat_left(data.0, data.1[0], &ctx).await {
-            Ok(x) => x,
+            Ok(_) => {}
             Err(e) => log_error(&e),
         },
         VoiceAction::UserMovedChannel => {
             match log_voice_chat_moved(data.0, data.1[0], data.1[1], &ctx).await {
-                Ok(x) => x,
+                Ok(_) => {}
                 Err(e) => log_error(&e),
             }
         }

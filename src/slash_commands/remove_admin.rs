@@ -1,4 +1,4 @@
-use crate::redis_client::{self, add_admin};
+use crate::redis_client::{self, remove_admin};
 use crate::slash_commands::errors::CommandError;
 use serenity::builder::CreateApplicationCommand;
 use serenity::model::application::command::CommandOptionType;
@@ -27,9 +27,14 @@ pub fn execute(
 
     if let CommandDataOptionValue::User(user, _member) = options {
         let mut connection = redis_client::connect();
-        match add_admin(&mut connection, user.id.to_string()) {
-            Ok(_) => Ok(format!("{} has been added to the admin list", user.tag())),
-            Err(_) => Err(CommandError::RedisError("add_admin() failed".to_string())),
+        match remove_admin(&mut connection, user.id.to_string()) {
+            Ok(_) => Ok(format!(
+                "{} has been removed from the admin list",
+                user.tag()
+            )),
+            Err(_) => Err(CommandError::RedisError(
+                "remove_admin() failed".to_string(),
+            )),
         }
     } else {
         Err(CommandError::Other(
@@ -40,12 +45,12 @@ pub fn execute(
 
 pub fn setup(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
-        .name("add-admin")
-        .description("Add user as an admin")
+        .name("remove-admin")
+        .description("Remove user from the admin list")
         .create_option(|option| {
             option
                 .name("id")
-                .description("The user to add")
+                .description("The user to remove")
                 .kind(CommandOptionType::User)
                 .required(true)
         })

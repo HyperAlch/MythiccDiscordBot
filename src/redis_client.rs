@@ -36,7 +36,17 @@ pub fn check_master_admin(conn: &mut redis::Connection) -> redis::RedisResult<()
     }
 }
 
-pub fn check_admin(conn: &mut redis::Connection, admin_id: &str) -> Result<bool, RedisError> {
+pub fn add_admin(conn: &mut redis::Connection, admin_id: String) -> redis::RedisResult<()> {
+    conn.sadd("admins", admin_id)?;
+    Ok(())
+}
+
+pub fn remove_admin(conn: &mut redis::Connection, admin_id: String) -> redis::RedisResult<()> {
+    conn.srem("admins", admin_id)?;
+    Ok(())
+}
+
+pub fn check_admin(conn: &mut redis::Connection, admin_id: String) -> Result<bool, RedisError> {
     let value: Result<bool, RedisError> = conn.sismember("admins", admin_id);
     value
 }

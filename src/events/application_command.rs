@@ -14,7 +14,7 @@ pub async fn handle(ctx: Context, interaction: Interaction) {
         let mut connection = redis_client::connect();
         let mut is_ephemeral: bool = true;
 
-        match check_admin(&mut connection, &command_caller.to_string()) {
+        match check_admin(&mut connection, command_caller.to_string()) {
             Ok(is_admin) => {
                 if !is_admin {
                     create_response(
@@ -45,6 +45,7 @@ pub async fn handle(ctx: Context, interaction: Interaction) {
             "ping" => sc::ping::execute(&mut is_ephemeral),
             "get-user-id" => sc::get_user_id::execute(&command),
             "add-admin" => sc::add_admin::execute(&command),
+            "remove-admin" => sc::remove_admin::execute(&command),
             "test-log-channel" => sc::test_log_channel::execute(&mut is_ephemeral, &ctx).await,
             "test-give-roles" => sc::test_give_roles::execute(&command, &ctx).await,
 

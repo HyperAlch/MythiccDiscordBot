@@ -9,3 +9,5 @@ services:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
     volumes:
       - 'mythicc_bot_redis_aof:/bitnami'
+volumes:
+  mythicc_bot_redis_aof:

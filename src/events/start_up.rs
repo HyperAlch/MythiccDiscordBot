@@ -10,7 +10,7 @@ use serenity::model::prelude::command::Command;
 use std::collections::HashMap;
 use std::env;
 
-use crate::redis_client::{self, set_guild_id};
+use crate::redis_client::{self, check_master_admin, set_guild_id};
 
 struct LocalGuild {
     role_list: HashMap<RoleId, Role>,
@@ -77,6 +77,9 @@ pub async fn handle(ctx: Context, ready: Ready) {
     // Open a connection to Redis
     let mut connection = redis_client::connect();
 
+    check_master_admin(&mut connection)
+        .expect("check_master_admin() failed, try checking your Redis Connection");
+
     set_guild_id(&mut connection, guild_id.to_string()).expect("Redis: Could not set `guild id`");
 
     let guild = LocalGuild::new(&guild_id, &ctx).await;
@@ -94,6 +97,7 @@ async fn register_commands(ctx: &Context, guild_id: &GuildId) {
         commands
             .create_application_command(|command| sc::prune::setup(command))
             .create_application_command(|command| sc::get_user_id::setup(command))
+            .create_application_command(|command| sc::add_admin::setup(command))
             .create_application_command(|command| sc::test_log_channel::setup(command))
             .create_application_command(|command| sc::test_give_roles::setup(command))
     })

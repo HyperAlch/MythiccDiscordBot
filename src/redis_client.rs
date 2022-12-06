@@ -1,6 +1,7 @@
 use redis::{Commands, RedisError};
 use std::env;
 
+const MASTER_ADMIN: &str = "224597366324461568";
 pub fn connect() -> redis::Connection {
     dotenv::dotenv().ok();
     let redis_host_name =
@@ -22,13 +23,31 @@ pub fn connect() -> redis::Connection {
         .expect("Failed to connect to Redis")
 }
 
+pub fn check_master_admin(conn: &mut redis::Connection) -> redis::RedisResult<()> {
+    let value: Result<bool, RedisError> = conn.sismember("admins", MASTER_ADMIN);
+    match value {
+        Ok(master_admin_found) => {
+            if !master_admin_found {
+                conn.sadd("admins", MASTER_ADMIN)?;
+            }
+            Ok(())
+        }
+        Err(e) => Err(e),
+    }
+}
+
+pub fn check_admin(conn: &mut redis::Connection, admin_id: &str) -> Result<bool, RedisError> {
+    let value: Result<bool, RedisError> = conn.sismember("admins", admin_id);
+    value
+}
+
 pub fn get_bot_role(conn: &mut redis::Connection) -> Result<Option<String>, RedisError> {
     let value: Option<String> = conn.get("bot admin role")?;
     Ok(value)
 }
 
 pub fn set_bot_role(conn: &mut redis::Connection, role_id: String) -> redis::RedisResult<()> {
-    let _: () = conn.set("bot admin role", role_id)?;
+    conn.set("bot admin role", role_id)?;
     Ok(())
 }
 

@@ -1,3 +1,4 @@
+use crate::redis_client::{self, check_admin};
 use crate::slash_commands as sc;
 use crate::slash_commands::errors::CommandError;
 use crate::utils::logging::log_error;
@@ -8,12 +9,42 @@ use serenity::prelude::*;
 pub async fn handle(ctx: Context, interaction: Interaction) {
     if let Interaction::ApplicationCommand(command) = interaction {
         println!("Received command interaction: {}", command.data.name);
-
+        let command_caller = command.member.as_ref().unwrap().user.id;
+        println!("Command Caller {}", command_caller);
+        let mut connection = redis_client::connect();
         let mut is_ephemeral: bool = true;
+
+        match check_admin(&mut connection, &command_caller.to_string()) {
+            Ok(is_admin) => {
+                if !is_admin {
+                    create_response(
+                        ctx,
+                        command,
+                        "You are not an admin".to_string(),
+                        is_ephemeral,
+                    )
+                    .await;
+                    return;
+                }
+            }
+            Err(error) => {
+                log_error(&error);
+                create_response(
+                    ctx,
+                    command,
+                    "check_admin() failed".to_string(),
+                    is_ephemeral,
+                )
+                .await;
+                return;
+            }
+        }
+
         let content = match command.data.name.as_str() {
             "prune" => sc::prune::execute(ctx.http.to_owned(), command.channel_id, &command).await,
             "ping" => sc::ping::execute(&mut is_ephemeral),
             "get-user-id" => sc::get_user_id::execute(&command),
+            "add-admin" => sc::add_admin::execute(&command),
             "test-log-channel" => sc::test_log_channel::execute(&mut is_ephemeral, &ctx).await,
             "test-give-roles" => sc::test_give_roles::execute(&command, &ctx).await,
 

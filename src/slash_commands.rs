@@ -1,3 +1,4 @@
+pub mod add_admin;
 pub mod errors;
 pub mod get_user_id;
 pub mod ping;

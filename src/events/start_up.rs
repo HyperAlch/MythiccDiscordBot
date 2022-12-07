@@ -96,6 +96,7 @@ async fn register_commands(ctx: &Context, guild_id: &GuildId) {
     let guild_commands = GuildId::set_application_commands(guild_id, &ctx.http, |commands| {
         commands
             .create_application_command(|command| sc::prune::setup(command))
+            .create_application_command(|command| sc::list_admins::setup(command))
             .create_application_command(|command| sc::get_user_id::setup(command))
             .create_application_command(|command| sc::add_admin::setup(command))
             .create_application_command(|command| sc::remove_admin::setup(command))

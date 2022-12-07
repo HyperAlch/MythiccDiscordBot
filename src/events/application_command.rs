@@ -43,6 +43,7 @@ pub async fn handle(ctx: Context, interaction: Interaction) {
         let content = match command.data.name.as_str() {
             "prune" => sc::prune::execute(ctx.http.to_owned(), command.channel_id, &command).await,
             "ping" => sc::ping::execute(&mut is_ephemeral),
+            "list-admins" => sc::list_admins::execute(&ctx).await,
             "get-user-id" => sc::get_user_id::execute(&command),
             "add-admin" => sc::add_admin::execute(&command),
             "remove-admin" => sc::remove_admin::execute(&command),

@@ -1,4 +1,4 @@
-use redis::{Commands, RedisError};
+use redis::{Commands, Iter, RedisError};
 use std::env;
 
 const MASTER_ADMIN: &str = "224597366324461568";
@@ -23,6 +23,10 @@ pub fn connect() -> redis::Connection {
         .expect("Failed to connect to Redis")
 }
 
+pub fn get_master_admin() -> &'static str {
+    MASTER_ADMIN
+}
+
 pub fn check_master_admin(conn: &mut redis::Connection) -> redis::RedisResult<()> {
     let value: Result<bool, RedisError> = conn.sismember("admins", MASTER_ADMIN);
     match value {
@@ -44,6 +48,17 @@ pub fn add_admin(conn: &mut redis::Connection, admin_id: String) -> redis::Redis
 pub fn remove_admin(conn: &mut redis::Connection, admin_id: String) -> redis::RedisResult<()> {
     conn.srem("admins", admin_id)?;
     Ok(())
+}
+
+pub fn list_admins(conn: &mut redis::Connection) -> Result<Vec<String>, RedisError> {
+    let admins_iter: Iter<String> = conn.sscan("admins")?;
+    let mut admins: Vec<String> = Vec::new();
+
+    for admin in admins_iter {
+        admins.push(admin);
+    }
+
+    Ok(admins)
 }
 
 pub fn check_admin(conn: &mut redis::Connection, admin_id: String) -> Result<bool, RedisError> {

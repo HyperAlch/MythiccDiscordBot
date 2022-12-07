@@ -1,6 +1,7 @@
 pub mod add_admin;
 pub mod errors;
 pub mod get_user_id;
+pub mod list_admins;
 pub mod ping;
 pub mod prune;
 pub mod remove_admin;

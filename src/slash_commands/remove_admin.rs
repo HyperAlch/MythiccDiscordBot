@@ -1,4 +1,4 @@
-use crate::redis_client::{self, remove_admin};
+use crate::redis_client::{self, get_master_admin, remove_admin};
 use crate::slash_commands::errors::CommandError;
 use serenity::builder::CreateApplicationCommand;
 use serenity::model::application::command::CommandOptionType;
@@ -27,7 +27,12 @@ pub fn execute(
 
     if let CommandDataOptionValue::User(user, _member) = options {
         let mut connection = redis_client::connect();
-        match remove_admin(&mut connection, user.id.to_string()) {
+        let user_id = user.id.to_string();
+        let master_admin = get_master_admin();
+        if user_id == master_admin {
+            return Ok("Cannot remove master admin".to_string());
+        };
+        match remove_admin(&mut connection, user_id) {
             Ok(_) => Ok(format!(
                 "{} has been removed from the admin list",
                 user.tag()

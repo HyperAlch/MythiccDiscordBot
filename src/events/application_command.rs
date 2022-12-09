@@ -55,12 +55,10 @@ pub async fn handle(ctx: Context, interaction: Interaction) {
 
         if let Ok(content) = content {
             create_response(ctx, command, content, is_ephemeral).await;
-        } else {
-            if let Err(error) = content {
-                log_error(&error);
-                let content = match_error(error);
-                create_response(ctx, command, content, is_ephemeral).await;
-            }
+        } else if let Err(error) = content {
+            log_error(&error);
+            let content = match_error(error);
+            create_response(ctx, command, content, is_ephemeral).await;
         }
     }
 }

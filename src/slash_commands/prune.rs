@@ -35,7 +35,6 @@ pub async fn execute(
         return Ok("Please provide a valid amount".to_string());
     }
 
-    let channel_id = ChannelId::from(channel_id);
     let mut messages = channel_id.messages_iter(&http).boxed();
     let mut message_ids: Vec<MessageId> = Vec::new();
     while let Some(message_result) = messages.next().await {
@@ -51,7 +50,7 @@ pub async fn execute(
         }
     }
 
-    let _successful = match channel_id
+    match channel_id
         .delete_messages(&http, message_ids.into_iter())
         .await
     {

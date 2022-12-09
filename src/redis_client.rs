@@ -82,7 +82,7 @@ pub fn get_follower_role(conn: &mut redis::Connection) -> Result<Option<String>,
 }
 
 pub fn set_guild_id(conn: &mut redis::Connection, guild_id: String) -> redis::RedisResult<()> {
-    let _: () = conn.set("guild id", guild_id)?;
+    conn.set("guild id", guild_id)?;
     Ok(())
 }
 
@@ -92,7 +92,7 @@ pub fn get_guild_id(conn: &mut redis::Connection) -> Result<Option<String>, Redi
 }
 
 pub fn set_follower_role(conn: &mut redis::Connection, role_id: String) -> redis::RedisResult<()> {
-    let _: () = conn.set("follower role", role_id)?;
+    conn.set("follower role", role_id)?;
     Ok(())
 }
 
@@ -105,7 +105,7 @@ pub fn set_major_log_channel(
     conn: &mut redis::Connection,
     channel_id: String,
 ) -> redis::RedisResult<()> {
-    let _: () = conn.set("major log channel", channel_id)?;
+    conn.set("major log channel", channel_id)?;
     Ok(())
 }
 
@@ -118,6 +118,6 @@ pub fn set_minor_log_channel(
     conn: &mut redis::Connection,
     channel_id: String,
 ) -> redis::RedisResult<()> {
-    let _: () = conn.set("minor log channel", channel_id)?;
+    conn.set("minor log channel", channel_id)?;
     Ok(())
 }

@@ -58,15 +58,8 @@ pub async fn send_log(ctx: Context, log_type: VoiceAction, data: LogData) {
 
 impl VoiceAction {
     fn new(old: &Option<VoiceState>, new: &VoiceState) -> Self {
-        let old_has_channel_id = match old {
-            Some(_) => true,
-            None => false,
-        };
-
-        let new_has_channel_id = match new.channel_id {
-            Some(_) => true,
-            None => false,
-        };
+        let old_has_channel_id = old.is_some();
+        let new_has_channel_id = new.channel_id.is_some();
 
         if old_has_channel_id && new_has_channel_id {
             Self::UserMovedChannel

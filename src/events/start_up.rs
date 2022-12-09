@@ -37,17 +37,11 @@ impl LocalGuild {
     }
 
     fn role_exists(&self, role_id: &RoleId) -> bool {
-        match self.role_list.get(role_id) {
-            Some(_) => true,
-            None => false,
-        }
+        self.role_list.get(role_id).is_some()
     }
 
     fn channel_exists(&self, channel_id: &ChannelId) -> bool {
-        match self.channel_list.get(channel_id) {
-            Some(_) => true,
-            None => false,
-        }
+        self.channel_list.get(channel_id).is_some()
     }
 }
 
@@ -111,7 +105,7 @@ impl LocalGuild {
         );
 
         if self.role_exists(&follower_id) {
-            println!("Follower role found: {}", follower_id.to_string());
+            println!("Follower role found: {}", follower_id);
         } else {
             panic!("Follower role not in guild, please add one!");
         }
@@ -138,19 +132,13 @@ impl LocalGuild {
         );
 
         if self.channel_exists(&major_log_channel_id) {
-            println!(
-                "Major log channel found: {}",
-                major_log_channel_id.to_string()
-            );
+            println!("Major log channel found: {}", major_log_channel_id);
         } else {
             panic!("Major log channel not found, please add one!");
         }
 
         if self.channel_exists(&minor_log_channel_id) {
-            println!(
-                "Minor log channel found: {}",
-                minor_log_channel_id.to_string()
-            );
+            println!("Minor log channel found: {}", minor_log_channel_id);
         } else {
             panic!("Minor log channel not found, please add one!");
         }

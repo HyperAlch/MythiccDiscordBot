@@ -49,16 +49,8 @@ pub async fn log_voice_chat_moved(
                     .color(YELLOW)
                     .timestamp(Utc::now())
                     .set_author(author)
-                    .field(
-                        "Left",
-                        format!("<#{}>", old_voice_chat_id.to_string()),
-                        true,
-                    )
-                    .field(
-                        "Joined",
-                        format!("<#{}>", new_voice_chat_id.to_string()),
-                        true,
-                    )
+                    .field("Left", format!("<#{}>", old_voice_chat_id), true)
+                    .field("Joined", format!("<#{}>", new_voice_chat_id), true)
                     .field(
                         "Username",
                         format!("<@{}> - {}#{}", user.id, user.name, user.discriminator),
@@ -70,9 +62,9 @@ pub async fn log_voice_chat_moved(
         .await;
 
     match success {
-        Ok(_) => return Ok(()),
-        Err(e) => return Err(LogChannelError::Other(e.to_string())),
-    };
+        Ok(_) => Ok(()),
+        Err(e) => Err(LogChannelError::Other(e.to_string())),
+    }
 }
 
 pub async fn log_voice_chat_left(
@@ -98,8 +90,7 @@ pub async fn log_voice_chat_left(
                     .color(RED)
                     .description(format!(
                         "<@{}> left voice channel  <#{}>",
-                        user.id,
-                        voice_chat_id.to_string()
+                        user.id, voice_chat_id
                     ))
                     .timestamp(Utc::now())
                     .set_author(author)
@@ -114,9 +105,9 @@ pub async fn log_voice_chat_left(
         .await;
 
     match success {
-        Ok(_) => return Ok(()),
-        Err(e) => return Err(LogChannelError::Other(e.to_string())),
-    };
+        Ok(_) => Ok(()),
+        Err(e) => Err(LogChannelError::Other(e.to_string())),
+    }
 }
 pub async fn log_roles_updated(
     user: User,
@@ -166,9 +157,9 @@ pub async fn log_roles_updated(
         .await;
 
     match success {
-        Ok(_) => return Ok(()),
-        Err(e) => return Err(LogChannelError::Other(e.to_string())),
-    };
+        Ok(_) => Ok(()),
+        Err(e) => Err(LogChannelError::Other(e.to_string())),
+    }
 }
 pub async fn log_voice_chat_joined(
     user: User,
@@ -193,8 +184,7 @@ pub async fn log_voice_chat_joined(
                     .color(GREEN)
                     .description(format!(
                         "<@{}> joined voice channel  <#{}>",
-                        user.id,
-                        voice_chat_id.to_string()
+                        user.id, voice_chat_id
                     ))
                     .timestamp(Utc::now())
                     .set_author(author)
@@ -209,9 +199,9 @@ pub async fn log_voice_chat_joined(
         .await;
 
     match success {
-        Ok(_) => return Ok(()),
-        Err(e) => return Err(LogChannelError::Other(e.to_string())),
-    };
+        Ok(_) => Ok(()),
+        Err(e) => Err(LogChannelError::Other(e.to_string())),
+    }
 }
 
 pub async fn log_user_unbanned(unbanned_user: &User, ctx: &Context) -> Result<(), LogChannelError> {
@@ -225,7 +215,7 @@ pub async fn log_user_unbanned(unbanned_user: &User, ctx: &Context) -> Result<()
         .send_message(&ctx.http, |m| {
             m.embed(|e| {
                 let mut author = CreateEmbedAuthor::default();
-                author.icon_url(get_avatar_url(&user));
+                author.icon_url(get_avatar_url(user));
                 author.name(user.name.clone());
 
                 let mut footer = CreateEmbedFooter::default();
@@ -249,9 +239,9 @@ pub async fn log_user_unbanned(unbanned_user: &User, ctx: &Context) -> Result<()
         .await;
 
     match success {
-        Ok(_) => return Ok(()),
-        Err(e) => return Err(LogChannelError::Other(e.to_string())),
-    };
+        Ok(_) => Ok(()),
+        Err(e) => Err(LogChannelError::Other(e.to_string())),
+    }
 }
 
 pub async fn log_user_banned(banned_user: &User, ctx: &Context) -> Result<(), LogChannelError> {
@@ -265,7 +255,7 @@ pub async fn log_user_banned(banned_user: &User, ctx: &Context) -> Result<(), Lo
         .send_message(&ctx.http, |m| {
             m.embed(|e| {
                 let mut author = CreateEmbedAuthor::default();
-                author.icon_url(get_avatar_url(&user));
+                author.icon_url(get_avatar_url(user));
                 author.name(user.name.clone());
 
                 let mut footer = CreateEmbedFooter::default();
@@ -289,9 +279,9 @@ pub async fn log_user_banned(banned_user: &User, ctx: &Context) -> Result<(), Lo
         .await;
 
     match success {
-        Ok(_) => return Ok(()),
-        Err(e) => return Err(LogChannelError::Other(e.to_string())),
-    };
+        Ok(_) => Ok(()),
+        Err(e) => Err(LogChannelError::Other(e.to_string())),
+    }
 }
 
 pub async fn log_user_joined(user_id: &UserId, ctx: &Context) -> Result<(), LogChannelError> {
@@ -332,9 +322,9 @@ pub async fn log_user_joined(user_id: &UserId, ctx: &Context) -> Result<(), LogC
         .await;
 
     match success {
-        Ok(_) => return Ok(()),
-        Err(e) => return Err(LogChannelError::Other(e.to_string())),
-    };
+        Ok(_) => Ok(()),
+        Err(e) => Err(LogChannelError::Other(e.to_string())),
+    }
 }
 
 pub async fn log_user_left(user: &User, ctx: &Context) -> Result<(), LogChannelError> {
@@ -346,7 +336,7 @@ pub async fn log_user_left(user: &User, ctx: &Context) -> Result<(), LogChannelE
         .send_message(&ctx.http, |m| {
             m.embed(|e| {
                 let mut author = CreateEmbedAuthor::default();
-                author.icon_url(get_avatar_url(&user));
+                author.icon_url(get_avatar_url(user));
                 author.name(user.name.clone());
 
                 let mut footer = CreateEmbedFooter::default();
@@ -370,9 +360,9 @@ pub async fn log_user_left(user: &User, ctx: &Context) -> Result<(), LogChannelE
         .await;
 
     match success {
-        Ok(_) => return Ok(()),
-        Err(e) => return Err(LogChannelError::Other(e.to_string())),
-    };
+        Ok(_) => Ok(()),
+        Err(e) => Err(LogChannelError::Other(e.to_string())),
+    }
 }
 
 fn unpack_major_channel_id(conn: &mut Connection) -> Result<ChannelId, LogChannelError> {

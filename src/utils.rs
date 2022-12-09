@@ -17,8 +17,7 @@ pub mod discord_cdn {
 
         format!(
             "https://cdn.discordapp.com/avatars/{}/{}.png",
-            user.id.to_string(),
-            avatar_url,
+            user.id, avatar_url,
         )
     }
 }
@@ -38,7 +37,7 @@ pub mod time {
         let date = &date.to_string()[0..10];
 
         let datetime = DateTime::<Utc>::from_utc(
-            chrono::NaiveDate::parse_from_str(&date.to_string(), "%Y-%m-%d")
+            chrono::NaiveDate::parse_from_str(date, "%Y-%m-%d")
                 .unwrap()
                 .and_hms(0, 0, 0),
             Utc,

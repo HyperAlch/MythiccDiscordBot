@@ -71,9 +71,9 @@ pub async fn execute(is_ephemeral: &mut bool, ctx: &Context) -> Result<String, C
         .await;
 
     match success {
-        Ok(_) => return Ok("Message sent to logs...".to_string()),
-        Err(e) => return Err(CommandError::Other(e.to_string())),
-    };
+        Ok(_) => Ok("Message sent to logs...".to_string()),
+        Err(e) => Err(CommandError::Other(e.to_string())),
+    }
 }
 
 pub fn setup(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {

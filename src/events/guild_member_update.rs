@@ -12,13 +12,13 @@ pub async fn handle(old_if_available: Option<Member>, new: Member, ctx: &Context
     let mut old_roles = Vec::new();
 
     for x in new_roles_state.iter() {
-        if !old_roles_state.contains(&x) {
+        if !old_roles_state.contains(x) {
             new_roles.push(x);
         }
     }
 
     for x in old_roles_state.iter() {
-        if !new_roles_state.contains(&x) {
+        if !new_roles_state.contains(x) {
             old_roles.push(x);
         }
     }
@@ -43,8 +43,8 @@ pub async fn handle(old_if_available: Option<Member>, new: Member, ctx: &Context
         })
         .collect();
 
-    if old_roles.len() > 0 || new_roles.len() > 0 {
-        match log_roles_updated(new.user, new_roles, old_roles, &ctx).await {
+    if !old_roles.is_empty() || !new_roles.is_empty() {
+        match log_roles_updated(new.user, new_roles, old_roles, ctx).await {
             Ok(_) => (),
             Err(error) => log_error(&error),
         };

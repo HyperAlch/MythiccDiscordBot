@@ -2,7 +2,9 @@ pub mod logging {
     use std::error::Error;
 
     pub fn log_error(error: &impl Error) {
-        println!("{}", error);
+        if error.to_string() != "" {
+            println!("{}", error);
+        }
     }
 }
 

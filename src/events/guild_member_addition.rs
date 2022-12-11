@@ -65,15 +65,10 @@ async fn give_follower_role(
 
     let success = new_member.add_role(&ctx.http, follower_role.id).await;
 
-    let mut error_reason = "".to_string();
-    match success {
-        Ok(_) => println!(
-            "New member joined {}, giving {} role",
-            new_member.display_name(),
-            follower_role.name
-        ),
-        Err(e) => error_reason = e.to_string(),
-    }
+    let error_reason = match success {
+        Ok(_) => "".to_string(),
+        Err(e) => e.to_string(),
+    };
 
     if error_reason == "Missing Permissions" {
         return Err(GuildMemberAdditionError::MissingPermissions);

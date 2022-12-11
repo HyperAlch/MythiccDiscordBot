@@ -30,4 +30,7 @@ pub enum VoiceStateUpdateError {
 
     #[error("Voice State Update Error: `{0}`")]
     Other(ErrorMessage),
+
+    #[error("")]
+    Unknown,
 }

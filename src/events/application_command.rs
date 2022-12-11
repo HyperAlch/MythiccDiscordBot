@@ -8,9 +8,7 @@ use serenity::prelude::*;
 
 pub async fn handle(ctx: Context, interaction: Interaction) {
     if let Interaction::ApplicationCommand(command) = interaction {
-        println!("Received command interaction: {}", command.data.name);
         let command_caller = command.member.as_ref().unwrap().user.id;
-        println!("Command Caller {}", command_caller);
         let mut connection = redis_client::connect();
         let mut is_ephemeral: bool = true;
 

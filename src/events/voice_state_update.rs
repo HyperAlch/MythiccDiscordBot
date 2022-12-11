@@ -21,9 +21,7 @@ pub async fn handle(ctx: Context, old: Option<VoiceState>, new: VoiceState) {
         VoiceAction::UserJoinedChannel => VoiceAction::joined_channel(new),
         VoiceAction::UserLeftChannel => VoiceAction::left_channel(old, new),
         VoiceAction::UserMovedChannel => VoiceAction::moved_channel(old, new),
-        VoiceAction::Unknown => Err(VoiceStateUpdateError::Other(
-            "Unknown action voice action captured.".to_string(),
-        )),
+        VoiceAction::Unknown => Err(VoiceStateUpdateError::Unknown),
     };
 
     match data {
@@ -62,7 +60,18 @@ impl VoiceAction {
         let new_has_channel_id = new.channel_id.is_some();
 
         if old_has_channel_id && new_has_channel_id {
-            Self::UserMovedChannel
+            let old_channel_id = match old.as_ref() {
+                Some(voice_state) => voice_state.channel_id,
+                None => return Self::Unknown,
+            };
+
+            let new_channel_id = new.channel_id;
+
+            if old_channel_id != new_channel_id {
+                Self::UserMovedChannel
+            } else {
+                Self::Unknown
+            }
         } else if !old_has_channel_id && new_has_channel_id {
             Self::UserJoinedChannel
         } else if old_has_channel_id && !new_has_channel_id {

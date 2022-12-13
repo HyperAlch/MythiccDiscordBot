@@ -1,0 +1,65 @@
+use crate::redis_client;
+use crate::slash_commands::errors::CommandError;
+use serenity::builder::CreateApplicationCommand;
+use serenity::client::Context;
+use serenity::model::id::ChannelId;
+
+pub async fn execute(is_ephemeral: &mut bool, ctx: &Context) -> Result<String, CommandError> {
+    *is_ephemeral = true;
+
+    let mut conn = redis_client::connect();
+
+    // Query and unpack the log channel id from Redis
+    let channel_id = match redis_client::get_major_log_channel(&mut conn) {
+        Ok(value) => match value {
+            Some(value) => match value.parse::<u64>() {
+                Ok(value) => value,
+                Err(_) => {
+                    return Err(CommandError::Other(
+                        "Could not parse log channel id into u64".to_string(),
+                    ))
+                }
+            },
+            None => {
+                return Err(CommandError::RedisError(
+                    "Could not resolve log channel id".to_string(),
+                ))
+            }
+        },
+        Err(e) => return Err(CommandError::Other(e.to_string())),
+    };
+
+    let channel_id = ChannelId(channel_id);
+    let success = channel_id
+        .send_message(&ctx, |m| {
+            m.content("Please select your favorite animal")
+                .components(|c| {
+                    c.create_action_row(|row| {
+                        // An action row can only contain one select menu!
+                        row.create_select_menu(|menu| {
+                            menu.custom_id("animal_select");
+                            menu.placeholder("No animal selected");
+                            menu.options(|f| {
+                                f.create_option(|o| o.label("🐈 meow").value("Cat"));
+                                f.create_option(|o| o.label("🐕 woof").value("Dog"));
+                                f.create_option(|o| o.label("🐎 neigh").value("Horse"));
+                                f.create_option(|o| o.label("🦙 hoooooooonk").value("Alpaca"));
+                                f.create_option(|o| o.label("🦀 crab rave").value("Ferris"))
+                            })
+                        })
+                    })
+                })
+        })
+        .await;
+
+    match success {
+        Ok(_) => Ok("Message sent to logs...".to_string()),
+        Err(e) => Err(CommandError::Other(e.to_string())),
+    }
+}
+
+pub fn setup(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
+    command
+        .name("test-single-select")
+        .description("Send an embedded single select to the log channel")
+}

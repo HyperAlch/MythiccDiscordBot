@@ -45,6 +45,10 @@ pub async fn handle(ctx: Context, interaction: Interaction) {
             "get-user-id" => sc::get_user_id::execute(&command),
             "add-admin" => sc::add_admin::execute(&command),
             "remove-admin" => sc::remove_admin::execute(&command),
+            "test-button-message" => {
+                sc::test_button_message::execute(&mut is_ephemeral, &ctx).await
+            }
+            "test-single-select" => sc::test_button_message::execute(&mut is_ephemeral, &ctx).await,
             "test-log-channel" => sc::test_log_channel::execute(&mut is_ephemeral, &ctx).await,
             "test-give-roles" => sc::test_give_roles::execute(&command, &ctx).await,
 

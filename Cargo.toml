@@ -25,6 +25,7 @@ features = [
     "cache",
     "http",
     "model",
+    "collector",
     # "standard_framework",
     "utils",
     "rustls_backend",

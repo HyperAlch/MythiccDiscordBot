@@ -18,7 +18,19 @@ struct Handler;
 #[async_trait]
 impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
-        events::application_command::handle(ctx, interaction).await;
+        match interaction {
+            Interaction::ApplicationCommand(_) => {
+                events::application_command::handle(ctx, interaction).await
+            }
+            Interaction::MessageComponent(_) => {
+                if let Interaction::MessageComponent(component_data) = &interaction {
+                    println!("{:#?}", interaction);
+                    let data = component_data.data.values.get(0).unwrap();
+                    println!("\n\n\n[Data]\n{:#?}", data);
+                }
+            }
+            _ => (),
+        };
     }
 
     async fn guild_member_addition(&self, ctx: Context, new_member: Member) {

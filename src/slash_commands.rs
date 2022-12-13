@@ -5,6 +5,8 @@ pub mod list_admins;
 pub mod ping;
 pub mod prune;
 pub mod remove_admin;
+pub mod test_button_message;
 pub mod test_give_roles;
 pub mod test_log_channel;
+pub mod test_single_select;
 pub mod utils;

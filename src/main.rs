@@ -19,15 +19,13 @@ struct Handler;
 impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         match interaction {
-            Interaction::ApplicationCommand(_) => {
-                events::application_command::handle(ctx, interaction).await
+            Interaction::ApplicationCommand(application_command_interaction) => {
+                events::application_command::handle(ctx, application_command_interaction).await
             }
-            Interaction::MessageComponent(_) => {
-                if let Interaction::MessageComponent(component_data) = &interaction {
-                    println!("{:#?}", interaction);
-                    let data = component_data.data.values.get(0).unwrap();
-                    println!("\n\n\n[Data]\n{:#?}", data);
-                }
+            Interaction::MessageComponent(message_component_interaction) => {
+                println!("{:#?}", message_component_interaction);
+                let data = message_component_interaction.data.values.get(0).unwrap();
+                println!("\n\n\n[Data]\n{:#?}", data);
             }
             _ => (),
         };

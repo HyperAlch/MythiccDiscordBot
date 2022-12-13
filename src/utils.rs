@@ -38,12 +38,12 @@ pub mod time {
         // Get only the date, not the time
         let date = &date.to_string()[0..10];
 
-        let datetime = DateTime::<Utc>::from_utc(
-            chrono::NaiveDate::parse_from_str(date, "%Y-%m-%d")
-                .unwrap()
-                .and_hms(0, 0, 0),
-            Utc,
-        );
+        let date = match chrono::NaiveDate::parse_from_str(date, "%Y-%m-%d") {
+            Ok(d) => d.and_hms(0, 0, 0),
+            Err(_) => return "!! years !! months !! days".to_string(),
+        };
+
+        let datetime = DateTime::<Utc>::from_utc(date, Utc);
 
         let diff = today.signed_duration_since(datetime);
         let days = diff.num_days();

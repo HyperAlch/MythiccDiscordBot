@@ -4,8 +4,19 @@ use serenity::model::prelude::Member;
 use crate::log_channel::log_roles_updated;
 use crate::utils::logging::log_error;
 
+use super::errors::GuildMemberUpdateError;
+
 pub async fn handle(old_if_available: Option<Member>, new: Member, ctx: &Context) {
-    let old_roles_state = old_if_available.unwrap().roles;
+    let old_roles_state = match old_if_available {
+        Some(state) => state.roles,
+        None => {
+            log_error(&GuildMemberUpdateError::DataMissing(
+                "old_roles_state".to_string(),
+            ));
+            return;
+        }
+    };
+
     let new_roles_state = new.roles;
 
     let mut new_roles = Vec::new();

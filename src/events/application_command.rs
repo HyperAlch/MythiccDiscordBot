@@ -1,15 +1,17 @@
+use std::future::Future;
+
 use crate::redis_client::{self, check_admin};
 use crate::slash_commands as sc;
 use crate::slash_commands::errors::CommandError;
 use crate::utils::logging::log_error;
+use serenity::builder::CreateApplicationCommand;
 use serenity::model::application::interaction::application_command::ApplicationCommandInteraction;
 use serenity::model::application::interaction::InteractionResponseType;
 use serenity::prelude::*;
 
 pub async fn handle(ctx: Context, application_command_interaction: ApplicationCommandInteraction) {
-    let mut is_ephemeral: bool = true;
-
-    let command_caller = match application_command_interaction.member.as_ref() {
+    let mut data_bundle = CommandDataBundle::new(ctx, application_command_interaction);
+    let command_caller = match data_bundle.interaction.member.as_ref() {
         Some(member) => member.user.id,
         None => {
             log_error(&CommandError::UnresolvedData(
@@ -17,10 +19,10 @@ pub async fn handle(ctx: Context, application_command_interaction: ApplicationCo
                 "Could not resolve command caller".to_string(),
             ));
             create_response(
-                ctx,
-                application_command_interaction,
+                data_bundle.ctx,
+                data_bundle.interaction,
                 "Could not resolve command caller".to_string(),
-                is_ephemeral,
+                data_bundle.is_ephemeral,
             )
             .await;
             return;
@@ -33,10 +35,10 @@ pub async fn handle(ctx: Context, application_command_interaction: ApplicationCo
         Ok(is_admin) => {
             if !is_admin {
                 create_response(
-                    ctx,
-                    application_command_interaction,
+                    data_bundle.ctx,
+                    data_bundle.interaction,
                     "You are not an admin".to_string(),
-                    is_ephemeral,
+                    data_bundle.is_ephemeral,
                 )
                 .await;
                 return;
@@ -45,46 +47,56 @@ pub async fn handle(ctx: Context, application_command_interaction: ApplicationCo
         Err(error) => {
             log_error(&error);
             create_response(
-                ctx,
-                application_command_interaction,
+                data_bundle.ctx,
+                data_bundle.interaction,
                 "check_admin() failed".to_string(),
-                is_ephemeral,
+                data_bundle.is_ephemeral,
             )
             .await;
             return;
         }
     }
 
-    let content = match application_command_interaction.data.name.as_str() {
-        "prune" => {
-            sc::prune::execute(
-                ctx.http.to_owned(),
-                application_command_interaction.channel_id,
-                &application_command_interaction,
-            )
-            .await
-        }
-        "ping" => sc::ping::execute(&mut is_ephemeral),
-        "list-admins" => sc::list_admins::execute(&ctx).await,
-        "get-user-id" => sc::get_user_id::execute(&application_command_interaction),
-        "add-admin" => sc::add_admin::execute(&application_command_interaction),
-        "remove-admin" => sc::remove_admin::execute(&application_command_interaction),
-        "test-button-message" => sc::test_button_message::execute(&mut is_ephemeral, &ctx).await,
-        "test-single-select" => sc::test_button_message::execute(&mut is_ephemeral, &ctx).await,
-        "test-log-channel" => sc::test_log_channel::execute(&mut is_ephemeral, &ctx).await,
-        "test-give-roles" => {
-            sc::test_give_roles::execute(&application_command_interaction, &ctx).await
-        }
+    // let command_list = CommandList {
+    //     commands: vec![TestGiveRoles],
+    // };
 
+    let command_instance = CommandInstanceExecuter {
+        execute_fn: sc::test_give_roles::execute,
+    };
+
+    let content = match data_bundle.interaction.data.name.as_str() {
+        "prune" => sc::prune::execute(&mut data_bundle).await,
+        "ping" => sc::ping::execute(&mut data_bundle).await,
+        "list-admins" => sc::list_admins::execute(&mut data_bundle).await,
+        "get-user-id" => sc::get_user_id::execute(&mut data_bundle).await,
+        "add-admin" => sc::add_admin::execute(&mut data_bundle).await,
+        "remove-admin" => sc::remove_admin::execute(&mut data_bundle).await,
+        "test-button-message" => sc::test_button_message::execute(&mut data_bundle).await,
+        "test-single-select" => sc::test_single_select::execute(&mut data_bundle).await,
+        // "test-log-channel" => sc::test_log_channel::execute(&mut data_bundle).await,
+        "test-give-roles" => command_instance.execute(&mut data_bundle).await,
         _ => Ok("Command removed or not implemented".to_string()),
     };
 
     if let Ok(content) = content {
-        create_response(ctx, application_command_interaction, content, is_ephemeral).await;
+        create_response(
+            data_bundle.ctx,
+            data_bundle.interaction,
+            content,
+            data_bundle.is_ephemeral,
+        )
+        .await;
     } else if let Err(error) = content {
         log_error(&error);
         let content = match_error(error);
-        create_response(ctx, application_command_interaction, content, is_ephemeral).await;
+        create_response(
+            data_bundle.ctx,
+            data_bundle.interaction,
+            content,
+            data_bundle.is_ephemeral,
+        )
+        .await;
     }
 }
 
@@ -114,5 +126,63 @@ fn match_error(error: CommandError) -> String {
         CommandError::RedisError(content) => content,
         CommandError::Other(content) => content,
         CommandError::UnresolvedData(_, content) => content,
+    }
+}
+
+/*
+       _____                                          _      _____ _                   _
+      / ____|                                        | |    / ____| |                 | |
+     | |     ___  _ __ ___  _ __ ___   __ _ _ __   __| |   | (___ | |_ _ __ _   _  ___| |_ _   _ _ __ ___
+     | |    / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` |    \___ \| __| '__| | | |/ __| __| | | | '__/ _ \
+     | |___| (_) | | | | | | | | | | | (_| | | | | (_| |    ____) | |_| |  | |_| | (__| |_| |_| | | |  __/
+      \_____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|   |_____/ \__|_|   \__,_|\___|\__|\__,_|_|  \___|
+*/
+
+pub struct CommandInstanceSetup {
+    pub setup_fn: fn(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand,
+}
+
+impl CommandInstanceSetup {
+    pub fn setup(self, command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
+        (self.setup_fn)(command)
+    }
+}
+
+pub struct CommandInstanceExecuter<'a, F>
+where
+    F: Future<Output = Result<String, CommandError>>,
+{
+    pub execute_fn: fn(data_bundle: &'a mut CommandDataBundle) -> F,
+}
+
+impl<'a, F> CommandInstanceExecuter<'a, F>
+where
+    F: Future<Output = Result<String, CommandError>>,
+{
+    async fn execute(
+        &self,
+        data_bundle: &'a mut CommandDataBundle,
+    ) -> Result<String, CommandError> {
+        (self.execute_fn)(data_bundle).await
+    }
+}
+
+pub struct CommandDataBundle {
+    pub ctx: Context,
+    pub is_ephemeral: bool,
+    pub interaction: ApplicationCommandInteraction,
+}
+
+impl CommandDataBundle {
+    pub fn new(ctx: Context, interaction: ApplicationCommandInteraction) -> Self {
+        Self {
+            ctx,
+            is_ephemeral: true,
+            interaction,
+        }
+    }
+
+    pub fn set_ephemeral(&mut self, is_ephemeral: bool) {
+        self.is_ephemeral = is_ephemeral;
     }
 }

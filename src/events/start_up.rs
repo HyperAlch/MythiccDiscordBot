@@ -11,6 +11,8 @@ use std::env;
 
 use crate::redis_client::{self, check_master_admin, set_guild_id};
 
+use super::application_command::CommandInstanceSetup;
+
 struct LocalGuild {
     role_list: HashMap<RoleId, Role>,
     channel_list: HashMap<ChannelId, GuildChannel>,
@@ -74,17 +76,22 @@ pub async fn handle(ctx: Context, ready: Ready) {
 
 async fn register_commands(ctx: &Context, guild_id: &GuildId) {
     // Register guild commands
-    let guild_commands = GuildId::set_application_commands(guild_id, &ctx.http, |commands| {
+    let command_instance = CommandInstanceSetup {
+        setup_fn: sc::test_give_roles::setup,
+    };
+
+    let guild_commands = GuildId::set_application_commands(guild_id, &ctx.http, move |commands| {
         commands
             .create_application_command(|command| sc::prune::setup(command))
             .create_application_command(|command| sc::list_admins::setup(command))
-            // .create_application_command(|command| sc::get_user_id::setup(command))
+            .create_application_command(|command| sc::get_user_id::setup(command))
             .create_application_command(|command| sc::add_admin::setup(command))
             .create_application_command(|command| sc::remove_admin::setup(command))
             .create_application_command(|command| sc::test_single_select::setup(command))
-        // .create_application_command(|command| sc::test_button_message::setup(command))
-        // .create_application_command(|command| sc::test_log_channel::setup(command))
-        // .create_application_command(|command| sc::test_give_roles::setup(command))
+            .create_application_command(|command| sc::test_button_message::setup(command))
+            // .create_application_command(|command| sc::test_log_channel::setup(command))
+            // .create_application_command(|command| sc::test_give_roles::setup(command))
+            .create_application_command(|command| command_instance.setup(command))
     })
     .await;
 

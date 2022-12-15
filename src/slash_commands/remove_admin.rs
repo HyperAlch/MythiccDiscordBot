@@ -1,13 +1,14 @@
+use crate::events::application_command::CommandDataBundle;
 use crate::redis_client::{self, get_master_admin, remove_admin};
 use crate::slash_commands::errors::CommandError;
 use serenity::builder::CreateApplicationCommand;
 use serenity::model::application::command::CommandOptionType;
 use serenity::model::application::interaction::application_command::CommandDataOptionValue;
-use serenity::model::prelude::interaction::application_command::ApplicationCommandInteraction;
 
-pub fn execute(
-    command_interaction: &ApplicationCommandInteraction,
-) -> Result<String, CommandError> {
+pub async fn execute(data_bundle: &mut CommandDataBundle) -> Result<String, CommandError> {
+    data_bundle.set_ephemeral(true);
+
+    let command_interaction = &data_bundle.interaction;
     let options = command_interaction.data.options.get(0);
     let options = match options {
         Some(x) => x,

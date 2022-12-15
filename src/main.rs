@@ -17,15 +17,14 @@ struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
+    // TODO: Put global command data here
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         match interaction {
             Interaction::ApplicationCommand(application_command_interaction) => {
                 events::application_command::handle(ctx, application_command_interaction).await
             }
             Interaction::MessageComponent(message_component_interaction) => {
-                println!("{:#?}", message_component_interaction);
-                let data = message_component_interaction.data.values.get(0).unwrap();
-                println!("\n\n\n[Data]\n{:#?}", data);
+                events::message_component::handle(ctx, message_component_interaction).await
             }
             _ => (),
         };

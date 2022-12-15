@@ -1,16 +1,16 @@
+use crate::events::application_command::CommandDataBundle;
 use crate::slash_commands::errors::CommandError;
 use serenity::builder::CreateApplicationCommand;
 use serenity::model::application::command::CommandOptionType;
 use serenity::model::application::interaction::application_command::CommandDataOptionValue;
-use serenity::model::prelude::interaction::application_command::ApplicationCommandInteraction;
-use serenity::{futures::StreamExt, http::Http, model::id::ChannelId, model::id::MessageId};
-use std::sync::Arc;
+use serenity::{futures::StreamExt, model::id::MessageId};
 
-pub async fn execute(
-    http: Arc<Http>,
-    channel_id: ChannelId,
-    command_interaction: &ApplicationCommandInteraction,
-) -> Result<String, CommandError> {
+pub async fn execute(data_bundle: &mut CommandDataBundle) -> Result<String, CommandError> {
+    data_bundle.set_ephemeral(true);
+
+    let channel_id = data_bundle.interaction.channel_id;
+    let http = data_bundle.ctx.http.to_owned();
+    let command_interaction = &data_bundle.interaction;
     let u_amount: usize;
 
     let amount = command_interaction.data.options.get(0);

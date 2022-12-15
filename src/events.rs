@@ -5,5 +5,6 @@ pub mod guild_ban_removal;
 pub mod guild_member_addition;
 pub mod guild_member_removal;
 pub mod guild_member_update;
+pub mod message_component;
 pub mod start_up;
 pub mod voice_state_update;

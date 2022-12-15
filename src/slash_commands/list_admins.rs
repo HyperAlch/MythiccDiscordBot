@@ -1,10 +1,14 @@
 use crate::{
+    events::application_command::CommandDataBundle,
     redis_client::{self, list_admins},
     slash_commands::errors::CommandError,
 };
-use serenity::{builder::CreateApplicationCommand, model::prelude::UserId, prelude::Context};
+use serenity::{builder::CreateApplicationCommand, model::prelude::UserId};
 
-pub async fn execute(ctx: &Context) -> Result<String, CommandError> {
+pub async fn execute(data_bundle: &mut CommandDataBundle) -> Result<String, CommandError> {
+    data_bundle.set_ephemeral(true);
+
+    let ctx = &data_bundle.ctx;
     let mut connection = redis_client::connect();
     let admins = match list_admins(&mut connection) {
         Ok(x) => x,

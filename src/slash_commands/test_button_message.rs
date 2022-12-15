@@ -1,11 +1,13 @@
+use crate::events::application_command::CommandDataBundle;
 use crate::redis_client;
 use crate::slash_commands::errors::CommandError;
 use serenity::builder::CreateApplicationCommand;
-use serenity::client::Context;
 use serenity::model::id::ChannelId;
 
-pub async fn execute(is_ephemeral: &mut bool, ctx: &Context) -> Result<String, CommandError> {
-    *is_ephemeral = true;
+pub async fn execute(data_bundle: &mut CommandDataBundle) -> Result<String, CommandError> {
+    data_bundle.set_ephemeral(true);
+
+    let ctx = &data_bundle.ctx;
 
     let mut conn = redis_client::connect();
 
@@ -60,6 +62,6 @@ pub async fn execute(is_ephemeral: &mut bool, ctx: &Context) -> Result<String, C
 
 pub fn setup(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
-        .name("test-single-select")
+        .name("test-button-message")
         .description("Send an embedded single select to the log channel")
 }

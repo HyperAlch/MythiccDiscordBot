@@ -1,11 +1,9 @@
-use crate::slash_commands::errors::CommandError;
+use crate::{events::application_command::CommandDataBundle, slash_commands::errors::CommandError};
 use serenity::builder::CreateApplicationCommand;
 
-pub fn execute(is_ephemeral: &mut bool) -> Result<String, CommandError> {
-    // ping acts as an example on how to enable / disable ephemeral messages
-    // is_ephemeral will already be true, so technically this code does nothing
-    // other than serve as an example
-    *is_ephemeral = true;
+pub async fn execute(data_bundle: &mut CommandDataBundle) -> Result<String, CommandError> {
+    data_bundle.set_ephemeral(true);
+
     Ok("Hey, I'm alive!".to_string())
 }
 

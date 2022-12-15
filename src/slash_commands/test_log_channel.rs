@@ -1,17 +1,17 @@
+use crate::events::application_command::CommandDataBundle;
 use crate::redis_client;
 use crate::slash_commands::errors::CommandError;
 use crate::utils::discord_cdn::get_avatar_url;
 use crate::utils::time::date_diff;
 use chrono::Utc;
 use serenity::builder::{CreateApplicationCommand, CreateEmbedAuthor, CreateEmbedFooter};
-use serenity::client::Context;
 use serenity::model::id::{ChannelId, UserId};
 
-pub async fn execute(is_ephemeral: &mut bool, ctx: &Context) -> Result<String, CommandError> {
-    *is_ephemeral = true;
+pub async fn execute(data_bundle: &mut CommandDataBundle) -> Result<String, CommandError> {
+    data_bundle.set_ephemeral(true);
 
+    let ctx = &data_bundle.ctx;
     let user_id = UserId(224597366324461568);
-
     let mut conn = redis_client::connect();
 
     // Query and unpack the log channel id from Redis

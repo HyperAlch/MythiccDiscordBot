@@ -1,8 +1,6 @@
-use std::future::Future;
-
 use crate::redis_client::{self, check_admin};
-use crate::slash_commands as sc;
 use crate::slash_commands::errors::CommandError;
+use crate::slash_commands::execute_command;
 use crate::utils::logging::log_error;
 use serenity::builder::CreateApplicationCommand;
 use serenity::model::application::interaction::application_command::ApplicationCommandInteraction;
@@ -57,27 +55,7 @@ pub async fn handle(ctx: Context, application_command_interaction: ApplicationCo
         }
     }
 
-    // let command_list = CommandList {
-    //     commands: vec![TestGiveRoles],
-    // };
-
-    let command_instance = CommandInstanceExecuter {
-        execute_fn: sc::test_give_roles::execute,
-    };
-
-    let content = match data_bundle.interaction.data.name.as_str() {
-        "prune" => sc::prune::execute(&mut data_bundle).await,
-        "ping" => sc::ping::execute(&mut data_bundle).await,
-        "list-admins" => sc::list_admins::execute(&mut data_bundle).await,
-        "get-user-id" => sc::get_user_id::execute(&mut data_bundle).await,
-        "add-admin" => sc::add_admin::execute(&mut data_bundle).await,
-        "remove-admin" => sc::remove_admin::execute(&mut data_bundle).await,
-        "test-button-message" => sc::test_button_message::execute(&mut data_bundle).await,
-        "test-single-select" => sc::test_single_select::execute(&mut data_bundle).await,
-        // "test-log-channel" => sc::test_log_channel::execute(&mut data_bundle).await,
-        "test-give-roles" => command_instance.execute(&mut data_bundle).await,
-        _ => Ok("Command removed or not implemented".to_string()),
-    };
+    let content = execute_command(&mut data_bundle).await;
 
     if let Ok(content) = content {
         create_response(
@@ -138,35 +116,59 @@ fn match_error(error: CommandError) -> String {
       \_____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|   |_____/ \__|_|   \__,_|\___|\__|\__,_|_|  \___|
 */
 
+// Individual CommandSetup Instances
 pub struct CommandInstanceSetup {
     pub setup_fn: fn(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand,
 }
 
 impl CommandInstanceSetup {
+    pub fn new(
+        setup_fn: fn(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand,
+    ) -> Self {
+        Self { setup_fn }
+    }
+
     pub fn setup(self, command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
         (self.setup_fn)(command)
     }
 }
 
-pub struct CommandInstanceExecuter<'a, F>
-where
-    F: Future<Output = Result<String, CommandError>>,
-{
-    pub execute_fn: fn(data_bundle: &'a mut CommandDataBundle) -> F,
+// List structure of CommandSetup Instances
+pub struct CommandSetupList {
+    pub setup_list: Vec<CommandInstanceSetup>,
 }
 
-impl<'a, F> CommandInstanceExecuter<'a, F>
-where
-    F: Future<Output = Result<String, CommandError>>,
-{
-    async fn execute(
-        &self,
-        data_bundle: &'a mut CommandDataBundle,
-    ) -> Result<String, CommandError> {
-        (self.execute_fn)(data_bundle).await
+impl CommandSetupList {
+    pub fn new() -> Self {
+        Self {
+            setup_list: Vec::new(),
+        }
+    }
+
+    pub fn add(&mut self, command_instance_setup: CommandInstanceSetup) {
+        self.setup_list.push(command_instance_setup);
     }
 }
 
+impl Default for CommandSetupList {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Iterator for CommandSetupList {
+    type Item = CommandInstanceSetup;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if !self.setup_list.is_empty() {
+            Some(self.setup_list.pop().unwrap())
+        } else {
+            None
+        }
+    }
+}
+
+// Data bundling for commands
 pub struct CommandDataBundle {
     pub ctx: Context,
     pub is_ephemeral: bool,

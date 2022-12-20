@@ -1,5 +1,5 @@
+use crate::application_commands::errors::CommandError;
 use crate::events::application_command::CommandDataBundle;
-use crate::slash_commands::errors::CommandError;
 use serenity::builder::CreateApplicationCommand;
 use serenity::model::application::command::CommandOptionType;
 use serenity::model::application::interaction::application_command::CommandDataOptionValue;

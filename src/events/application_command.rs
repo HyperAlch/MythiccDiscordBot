@@ -1,6 +1,6 @@
+use crate::application_commands::errors::CommandError;
+use crate::application_commands::execute_command;
 use crate::redis_client::{self, check_admin};
-use crate::slash_commands::errors::CommandError;
-use crate::slash_commands::execute_command;
 use crate::utils::logging::log_error;
 use serenity::builder::CreateApplicationCommand;
 use serenity::model::application::interaction::application_command::ApplicationCommandInteraction;

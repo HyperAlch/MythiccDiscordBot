@@ -1,6 +1,6 @@
+use crate::application_commands::errors::CommandError;
 use crate::events::application_command::CommandDataBundle;
 use crate::redis_client;
-use crate::slash_commands::errors::CommandError;
 use serenity::builder::CreateApplicationCommand;
 use serenity::model::id::ChannelId;
 
@@ -39,7 +39,7 @@ pub async fn execute(data_bundle: &mut CommandDataBundle) -> Result<String, Comm
                     c.create_action_row(|row| {
                         // An action row can only contain one select menu!
                         row.create_select_menu(|menu| {
-                            menu.custom_id("animal_select");
+                            menu.custom_id("test-single-select");
                             menu.placeholder("No animal selected");
                             menu.options(|f| {
                                 f.create_option(|o| o.label("🐈 meow").value("Cat"));

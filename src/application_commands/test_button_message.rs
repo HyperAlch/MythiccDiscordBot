@@ -1,6 +1,6 @@
+use crate::application_commands::errors::CommandError;
 use crate::events::application_command::CommandDataBundle;
 use crate::redis_client;
-use crate::slash_commands::errors::CommandError;
 use serenity::builder::CreateApplicationCommand;
 use serenity::model::id::ChannelId;
 

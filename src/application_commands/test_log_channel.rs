@@ -1,6 +1,6 @@
+use crate::application_commands::errors::CommandError;
 use crate::events::application_command::CommandDataBundle;
 use crate::redis_client;
-use crate::slash_commands::errors::CommandError;
 use crate::utils::discord_cdn::get_avatar_url;
 use crate::utils::time::date_diff;
 use chrono::Utc;

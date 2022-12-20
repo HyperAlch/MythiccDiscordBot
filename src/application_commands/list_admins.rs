@@ -1,7 +1,7 @@
 use crate::{
+    application_commands::errors::CommandError,
     events::application_command::CommandDataBundle,
     redis_client::{self, list_admins},
-    slash_commands::errors::CommandError,
 };
 use serenity::{builder::CreateApplicationCommand, model::prelude::UserId};
 

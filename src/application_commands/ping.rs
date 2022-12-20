@@ -1,4 +1,6 @@
-use crate::{events::application_command::CommandDataBundle, slash_commands::errors::CommandError};
+use crate::{
+    application_commands::errors::CommandError, events::application_command::CommandDataBundle,
+};
 use serenity::builder::CreateApplicationCommand;
 
 pub async fn execute(data_bundle: &mut CommandDataBundle) -> Result<String, CommandError> {

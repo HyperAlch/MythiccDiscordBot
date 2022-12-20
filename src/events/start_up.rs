@@ -3,7 +3,7 @@ use serenity::model::gateway::Ready;
 use serenity::model::id::GuildId;
 use serenity::model::prelude::{ChannelId, GuildChannel, Role, RoleId};
 
-use crate::slash_commands::{self as sc, guild_commands_reg};
+use crate::application_commands::{self as sc, guild_commands_reg};
 
 use serenity::model::prelude::command::Command;
 use std::collections::HashMap;

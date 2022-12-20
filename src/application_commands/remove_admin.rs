@@ -1,6 +1,6 @@
+use crate::application_commands::errors::CommandError;
 use crate::events::application_command::CommandDataBundle;
-use crate::redis_client::{self, add_admin};
-use crate::slash_commands::errors::CommandError;
+use crate::redis_client::{self, get_master_admin, remove_admin};
 use serenity::builder::CreateApplicationCommand;
 use serenity::model::application::command::CommandOptionType;
 use serenity::model::application::interaction::application_command::CommandDataOptionValue;
@@ -28,9 +28,19 @@ pub async fn execute(data_bundle: &mut CommandDataBundle) -> Result<String, Comm
 
     if let CommandDataOptionValue::User(user, _member) = options {
         let mut connection = redis_client::connect();
-        match add_admin(&mut connection, user.id.to_string()) {
-            Ok(_) => Ok(format!("{} has been added to the admin list", user.tag())),
-            Err(_) => Err(CommandError::RedisError("add_admin() failed".to_string())),
+        let user_id = user.id.to_string();
+        let master_admin = get_master_admin();
+        if user_id == master_admin {
+            return Ok("Cannot remove master admin".to_string());
+        };
+        match remove_admin(&mut connection, user_id) {
+            Ok(_) => Ok(format!(
+                "{} has been removed from the admin list",
+                user.tag()
+            )),
+            Err(_) => Err(CommandError::RedisError(
+                "remove_admin() failed".to_string(),
+            )),
         }
     } else {
         Err(CommandError::Other(
@@ -41,12 +51,12 @@ pub async fn execute(data_bundle: &mut CommandDataBundle) -> Result<String, Comm
 
 pub fn setup(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
-        .name("add-admin")
-        .description("Add user as an admin")
+        .name("remove-admin")
+        .description("Remove user from the admin list")
         .create_option(|option| {
             option
                 .name("id")
-                .description("The user to add")
+                .description("The user to remove")
                 .kind(CommandOptionType::User)
                 .required(true)
         })

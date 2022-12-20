@@ -26,7 +26,6 @@ pub fn guild_commands_reg() -> CommandSetupList {
     guild_commands_list.add(CommandInstanceSetup::new(test_log_channel::setup));
     guild_commands_list.add(CommandInstanceSetup::new(test_button_message::setup));
     guild_commands_list.add(CommandInstanceSetup::new(test_single_select::setup));
-    guild_commands_list.add(CommandInstanceSetup::new(ping::setup));
 
     // Admin commands
     guild_commands_list.add(CommandInstanceSetup::new(add_admin::setup));

@@ -7,7 +7,6 @@ use self::errors::CommandError;
 pub mod add_admin;
 pub mod errors;
 pub mod get_user_id;
-pub mod interface;
 pub mod list_admins;
 pub mod ping;
 pub mod prune;

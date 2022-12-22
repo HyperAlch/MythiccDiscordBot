@@ -37,7 +37,7 @@ pub async fn execute(data_bundle: &mut CommandDataBundle) -> Result<String, Comm
             m.content("Say hi to the bot").components(|c| {
                 c.create_action_row(|row| {
                     row.create_button(|button| {
-                        button.custom_id("test-button-message").label("Say Hi")
+                        button.custom_id("test-modal").label("Open Modal")
                     })
                 })
             })
@@ -52,6 +52,6 @@ pub async fn execute(data_bundle: &mut CommandDataBundle) -> Result<String, Comm
 
 pub fn setup(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
-        .name("test-button-message")
-        .description("Send an embedded button message to the log channel")
+        .name("test-modal")
+        .description("Send an embedded button message that triggers a modal")
 }

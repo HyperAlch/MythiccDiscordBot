@@ -32,15 +32,35 @@ pub async fn execute(data_bundle: &mut CommandDataBundle) -> Result<String, Comm
     };
 
     let channel_id = ChannelId(channel_id);
+
     let success = channel_id
         .send_message(&ctx, |m| {
-            m.content("Say hi to the bot").components(|c| {
-                c.create_action_row(|row| {
-                    row.create_button(|button| {
-                        button.custom_id("test-button-message").label("Say Hi")
+            m.content("Please select your favorite animal")
+                .components(|c| {
+                    c.create_action_row(|row| {
+                        // An action row can only contain one select menu!
+                        row.create_select_menu(|menu| {
+                            let select_options = vec![
+                                ("🐈 meow", "Cat"),
+                                ("🐕 woof", "Dog"),
+                                ("🐎 neigh", "Horse"),
+                                ("🦙 hoooooooonk", "Alpaca"),
+                                ("🦀 crab rave", "Ferris")
+,
+                            ];
+
+                            menu.custom_id("test-multiple-select");
+                            menu.placeholder("No animal selected");
+                            menu.max_values(u64::try_from(select_options.len()).unwrap());
+                            menu.options(move |f| {
+                                for option in select_options {
+                                    f.create_option(|o| o.label(option.0).value(option.1));
+                                }
+                                f
+                            })
+                        })
                     })
                 })
-            })
         })
         .await;
 
@@ -52,6 +72,6 @@ pub async fn execute(data_bundle: &mut CommandDataBundle) -> Result<String, Comm
 
 pub fn setup(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
-        .name("test-button-message")
-        .description("Send an embedded button message to the log channel")
+        .name("test-multiple-select")
+        .description("Send an embedded multiple select to the log channel")
 }

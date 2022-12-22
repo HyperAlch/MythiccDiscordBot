@@ -14,6 +14,8 @@ pub mod remove_admin;
 pub mod test_button_message;
 pub mod test_give_roles;
 pub mod test_log_channel;
+pub mod test_modal;
+pub mod test_multiple_select;
 pub mod test_single_select;
 pub mod utils;
 
@@ -25,6 +27,8 @@ pub fn guild_commands_reg() -> CommandSetupList {
     guild_commands_list.add(CommandInstanceSetup::new(test_log_channel::setup));
     guild_commands_list.add(CommandInstanceSetup::new(test_button_message::setup));
     guild_commands_list.add(CommandInstanceSetup::new(test_single_select::setup));
+    guild_commands_list.add(CommandInstanceSetup::new(test_multiple_select::setup));
+    guild_commands_list.add(CommandInstanceSetup::new(test_modal::setup));
 
     // Admin commands
     guild_commands_list.add(CommandInstanceSetup::new(add_admin::setup));
@@ -47,6 +51,8 @@ pub async fn execute_command(data_bundle: &mut CommandDataBundle) -> Result<Stri
         "test-log-channel" => test_log_channel::execute(data_bundle).await,
         "test-button-message" => test_button_message::execute(data_bundle).await,
         "test-single-select" => test_single_select::execute(data_bundle).await,
+        "test-multiple-select" => test_multiple_select::execute(data_bundle).await,
+        "test-modal" => test_modal::execute(data_bundle).await,
         "ping" => ping::execute(data_bundle).await,
 
         // Admin commands

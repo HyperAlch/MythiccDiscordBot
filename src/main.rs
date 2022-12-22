@@ -17,7 +17,6 @@ struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
-    // TODO: Put global command data here
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         match interaction {
             Interaction::ApplicationCommand(application_command_interaction) => {

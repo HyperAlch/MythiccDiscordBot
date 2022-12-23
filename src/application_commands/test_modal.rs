@@ -36,9 +36,7 @@ pub async fn execute(data_bundle: &mut CommandDataBundle) -> Result<String, Comm
         .send_message(&ctx, |m| {
             m.content("Say hi to the bot").components(|c| {
                 c.create_action_row(|row| {
-                    row.create_button(|button| {
-                        button.custom_id("test-modal").label("Open Modal")
-                    })
+                    row.create_button(|button| button.custom_id("test-modal").label("Open Modal"))
                 })
             })
         })

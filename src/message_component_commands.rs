@@ -1,14 +1,17 @@
 use self::errors::ComponentInteractionError;
-use crate::events::message_component::MessageComponentDataBundle;
+use crate::events::message_component::{
+    MessageComponentDataBundle, MessageComponentResponseBundle,
+};
 
 pub mod errors;
 pub mod test_button_message;
+pub mod test_modal;
 pub mod test_multiple_select;
 pub mod test_single_select;
 
 pub async fn execute_command(
     data_bundle: &mut MessageComponentDataBundle,
-) -> Result<String, ComponentInteractionError> {
+) -> Result<MessageComponentResponseBundle, ComponentInteractionError> {
     let command_id = data_bundle.interaction.data.custom_id.as_str();
 
     match command_id {
@@ -16,7 +19,11 @@ pub async fn execute_command(
         "test-single-select" => test_single_select::execute(data_bundle).await,
         "test-multiple-select" => test_multiple_select::execute(data_bundle).await,
         "test-button-message" => test_button_message::execute(data_bundle).await,
+        "test-modal" => test_modal::execute(data_bundle).await,
         // No match
-        _ => Ok("Command removed or not implemented".to_string()),
+        _ => Ok(MessageComponentResponseBundle {
+            message: Some("Command removed or not implemented".to_string()),
+            modal: None,
+        }),
     }
 }

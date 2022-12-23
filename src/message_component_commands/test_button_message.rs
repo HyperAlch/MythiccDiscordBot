@@ -1,12 +1,15 @@
 use crate::{
-    events::message_component::MessageComponentDataBundle,
+    events::message_component::{MessageComponentDataBundle, MessageComponentResponseBundle},
     message_component_commands::errors::ComponentInteractionError,
 };
 
 pub async fn execute(
     data_bundle: &mut MessageComponentDataBundle,
-) -> Result<String, ComponentInteractionError> {
+) -> Result<MessageComponentResponseBundle, ComponentInteractionError> {
     data_bundle.set_ephemeral(true);
 
-    Ok("Well hello there!".to_string())
+    Ok(MessageComponentResponseBundle {
+        message: Some("Well hello there!".to_string()),
+        modal: None,
+    })
 }

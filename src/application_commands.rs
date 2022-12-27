@@ -11,6 +11,7 @@ pub mod list_admins;
 pub mod ping;
 pub mod prune;
 pub mod remove_admin;
+pub mod setup_pick_games_modal;
 pub mod test_button_message;
 pub mod test_give_roles;
 pub mod test_log_channel;
@@ -29,6 +30,9 @@ pub fn guild_commands_reg() -> CommandSetupList {
     guild_commands_list.add(CommandInstanceSetup::new(test_single_select::setup));
     guild_commands_list.add(CommandInstanceSetup::new(test_multiple_select::setup));
     guild_commands_list.add(CommandInstanceSetup::new(test_modal::setup));
+
+    // UI Component Commands
+    guild_commands_list.add(CommandInstanceSetup::new(setup_pick_games_modal::setup));
 
     // Admin commands
     guild_commands_list.add(CommandInstanceSetup::new(add_admin::setup));
@@ -54,6 +58,9 @@ pub async fn execute_command(data_bundle: &mut CommandDataBundle) -> Result<Stri
         "test-multiple-select" => test_multiple_select::execute(data_bundle).await,
         "test-modal" => test_modal::execute(data_bundle).await,
         "ping" => ping::execute(data_bundle).await,
+
+        // UI Component Commands
+        "setup-pick-games-modal" => setup_pick_games_modal::execute(data_bundle).await,
 
         // Admin commands
         "add-admin" => add_admin::execute(data_bundle).await,

@@ -58,13 +58,15 @@ pub async fn handle(ctx: Context, application_command_interaction: ApplicationCo
     let content = execute_command(&mut data_bundle).await;
 
     if let Ok(content) = content {
-        create_response(
-            data_bundle.ctx,
-            data_bundle.interaction,
-            content,
-            data_bundle.is_ephemeral,
-        )
-        .await;
+        if !content.is_empty() {
+            create_response(
+                data_bundle.ctx,
+                data_bundle.interaction,
+                content,
+                data_bundle.is_ephemeral,
+            )
+            .await;
+        }
     } else if let Err(error) = content {
         log_error(&error);
         let content = match_error(error);

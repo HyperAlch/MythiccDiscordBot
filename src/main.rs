@@ -25,6 +25,9 @@ impl EventHandler for Handler {
             Interaction::MessageComponent(message_component_interaction) => {
                 events::message_component::handle(ctx, message_component_interaction).await
             }
+            Interaction::ModalSubmit(modal_submit_interaction) => {
+                events::modal_submit::handle(ctx, modal_submit_interaction).await
+            }
             _ => (),
         };
     }

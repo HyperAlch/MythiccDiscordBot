@@ -40,6 +40,11 @@ pub fn check_master_admin(conn: &mut redis::Connection) -> redis::RedisResult<()
     }
 }
 
+pub fn add_game(conn: &mut redis::Connection, game_role_id: String) -> redis::RedisResult<()> {
+    conn.sadd("games", game_role_id)?;
+    Ok(())
+}
+
 pub fn add_admin(conn: &mut redis::Connection, admin_id: String) -> redis::RedisResult<()> {
     conn.sadd("admins", admin_id)?;
     Ok(())

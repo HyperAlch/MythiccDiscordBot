@@ -23,8 +23,8 @@ pub async fn handle(ctx: Context, message_component_interaction: MessageComponen
             Some(modal) => {
                 create_modal_response(data_bundle.ctx, data_bundle.interaction, modal).await
             }
-            None => match msg {
-                Some(msg) => {
+            None => {
+                if let Some(msg) = msg {
                     create_response(
                         data_bundle.ctx,
                         data_bundle.interaction,
@@ -33,8 +33,7 @@ pub async fn handle(ctx: Context, message_component_interaction: MessageComponen
                     )
                     .await
                 }
-                None => (),
-            },
+            }
         }
     } else if let Err(error) = content {
         log_error(&error);

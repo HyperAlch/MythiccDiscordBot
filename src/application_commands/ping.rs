@@ -14,7 +14,3 @@ pub fn setup() -> impl FnOnce(&mut CreateApplicationCommand) -> &mut CreateAppli
         command.name("ping").description("Check if bot is online")
     }
 }
-
-// pub fn setup(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-//     command.name("ping").description("Check if bot is online")
-// }

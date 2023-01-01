@@ -45,6 +45,22 @@ pub fn add_game(conn: &mut redis::Connection, game_role_id: String) -> redis::Re
     Ok(())
 }
 
+pub fn remove_game(conn: &mut redis::Connection, game_role_id: String) -> redis::RedisResult<()> {
+    conn.srem("games", game_role_id)?;
+    Ok(())
+}
+
+pub fn list_games(conn: &mut redis::Connection) -> Result<Vec<String>, RedisError> {
+    let games_iter: Iter<String> = conn.sscan("games")?;
+    let mut games: Vec<String> = Vec::new();
+
+    for game in games_iter {
+        games.push(game);
+    }
+
+    Ok(games)
+}
+
 pub fn add_admin(conn: &mut redis::Connection, admin_id: String) -> redis::RedisResult<()> {
     conn.sadd("admins", admin_id)?;
     Ok(())

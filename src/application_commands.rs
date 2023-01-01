@@ -4,12 +4,15 @@ use self::errors::CommandError;
 use serenity::builder::CreateApplicationCommands;
 
 pub mod add_admin;
+pub mod add_game;
 pub mod errors;
 pub mod get_user_id;
 pub mod list_admins;
+pub mod list_games;
 pub mod ping;
 pub mod prune;
 pub mod remove_admin;
+pub mod remove_game;
 pub mod setup_pick_games_modal;
 pub mod test_button_message;
 pub mod test_give_roles;
@@ -29,6 +32,11 @@ pub fn guild_commands_reg(
     commands.create_application_command(test_single_select::setup());
     commands.create_application_command(test_multiple_select::setup());
     commands.create_application_command(test_modal::setup());
+
+    // Supported Games Commands
+    commands.create_application_command(add_game::setup());
+    commands.create_application_command(list_games::setup());
+    commands.create_application_command(remove_game::setup());
 
     // UI Component Commands
     commands.create_application_command(setup_pick_games_modal::setup());
@@ -63,6 +71,11 @@ pub async fn execute_command(data_bundle: &mut CommandDataBundle) -> Result<Stri
         "add-admin" => add_admin::execute(data_bundle).await,
         "list-admins" => list_admins::execute(data_bundle).await,
         "remove-admin" => remove_admin::execute(data_bundle).await,
+
+        // Supported Games Commands
+        "add-game" => add_game::execute(data_bundle).await,
+        "list-games" => list_games::execute(data_bundle).await,
+        "remove-game" => remove_game::execute(data_bundle).await,
 
         // Util commands
         "prune" => prune::execute(data_bundle).await,

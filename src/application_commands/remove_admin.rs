@@ -12,7 +12,7 @@ pub async fn execute(data_bundle: &mut CommandDataBundle) -> Result<String, Comm
     let options = command_interaction.data.options.get(0);
     let options = match options {
         Some(x) => x,
-        None => return Err(CommandError::ArgumentMissing("Get User ID".to_string())),
+        None => return Err(CommandError::ArgumentMissing("Remove Admin".to_string())),
     };
 
     let options = options.resolved.as_ref();
@@ -20,7 +20,7 @@ pub async fn execute(data_bundle: &mut CommandDataBundle) -> Result<String, Comm
         Some(x) => x,
         None => {
             return Err(CommandError::UnresolvedData(
-                "Get User ID".to_string(),
+                "Remove Admin".to_string(),
                 "Expected user object".to_string(),
             ))
         }

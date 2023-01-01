@@ -74,20 +74,14 @@ pub async fn handle(ctx: Context, ready: Ready) {
 
 async fn register_commands(ctx: &Context, guild_id: &GuildId) {
     // Register guild commands
-    let guild_commands_list = guild_commands_reg();
-
     let guild_commands = GuildId::set_application_commands(guild_id, &ctx.http, move |commands| {
-        for c in guild_commands_list {
-            commands.create_application_command(|command| c.setup(command));
-        }
-        commands
+        guild_commands_reg(commands)
     })
     .await;
 
     // Register global commands
     let global_command =
-        Command::create_global_application_command(&ctx.http, |command| sc::ping::setup(command))
-            .await;
+        Command::create_global_application_command(&ctx.http, sc::ping::setup()).await;
 
     // For debugging
     sc::utils::check_command_reg_verbose(guild_commands, global_command);

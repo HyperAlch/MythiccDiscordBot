@@ -2,7 +2,6 @@ use crate::application_commands::errors::CommandError;
 use crate::application_commands::execute_command;
 use crate::redis_client::{self, check_admin};
 use crate::utils::logging::log_error;
-use serenity::builder::CreateApplicationCommand;
 use serenity::model::application::interaction::application_command::ApplicationCommandInteraction;
 use serenity::model::application::interaction::InteractionResponseType;
 use serenity::prelude::*;
@@ -117,58 +116,6 @@ fn match_error(error: CommandError) -> String {
      | |___| (_) | | | | | | | | | | | (_| | | | | (_| |    ____) | |_| |  | |_| | (__| |_| |_| | | |  __/
       \_____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|   |_____/ \__|_|   \__,_|\___|\__|\__,_|_|  \___|
 */
-
-// Individual CommandSetup Instances
-pub struct CommandInstanceSetup {
-    pub setup_fn: fn(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand,
-}
-
-impl CommandInstanceSetup {
-    pub fn new(
-        setup_fn: fn(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand,
-    ) -> Self {
-        Self { setup_fn }
-    }
-
-    pub fn setup(self, command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-        (self.setup_fn)(command)
-    }
-}
-
-// List structure of CommandSetup Instances
-pub struct CommandSetupList {
-    pub setup_list: Vec<CommandInstanceSetup>,
-}
-
-impl CommandSetupList {
-    pub fn new() -> Self {
-        Self {
-            setup_list: Vec::new(),
-        }
-    }
-
-    pub fn add(&mut self, command_instance_setup: CommandInstanceSetup) {
-        self.setup_list.push(command_instance_setup);
-    }
-}
-
-impl Default for CommandSetupList {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl Iterator for CommandSetupList {
-    type Item = CommandInstanceSetup;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if !self.setup_list.is_empty() {
-            Some(self.setup_list.pop().unwrap())
-        } else {
-            None
-        }
-    }
-}
 
 // Data bundling for commands
 pub struct CommandDataBundle {

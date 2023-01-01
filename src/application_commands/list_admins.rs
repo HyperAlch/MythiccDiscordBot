@@ -35,8 +35,10 @@ pub async fn execute(data_bundle: &mut CommandDataBundle) -> Result<String, Comm
     Ok(content)
 }
 
-pub fn setup(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-    command
-        .name("list-admins")
-        .description("List all bot admins")
+pub fn setup() -> impl FnOnce(&mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
+    move |command: &mut CreateApplicationCommand| {
+        command
+            .name("list-admins")
+            .description("List all bot admins")
+    }
 }

@@ -61,15 +61,17 @@ pub async fn execute(data_bundle: &mut CommandDataBundle) -> Result<String, Comm
     Ok("Prune done!".to_string())
 }
 
-pub fn setup(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-    command
-        .name("prune")
-        .description("Delete 'x' amount of messages")
-        .create_option(|option| {
-            option
-                .name("amount")
-                .description("Amount to delete")
-                .kind(CommandOptionType::Integer)
-                .required(true)
-        })
+pub fn setup() -> impl FnOnce(&mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
+    move |command: &mut CreateApplicationCommand| {
+        command
+            .name("prune")
+            .description("Delete 'x' amount of messages")
+            .create_option(|option| {
+                option
+                    .name("amount")
+                    .description("Amount to delete")
+                    .kind(CommandOptionType::Integer)
+                    .required(true)
+            })
+    }
 }

@@ -49,15 +49,17 @@ pub async fn execute(data_bundle: &mut CommandDataBundle) -> Result<String, Comm
     }
 }
 
-pub fn setup(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-    command
-        .name("remove-admin")
-        .description("Remove user from the admin list")
-        .create_option(|option| {
-            option
-                .name("id")
-                .description("The user to remove")
-                .kind(CommandOptionType::User)
-                .required(true)
-        })
+pub fn setup() -> impl FnOnce(&mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
+    move |command: &mut CreateApplicationCommand| {
+        command
+            .name("remove-admin")
+            .description("Remove user from the admin list")
+            .create_option(|option| {
+                option
+                    .name("id")
+                    .description("The user to remove")
+                    .kind(CommandOptionType::User)
+                    .required(true)
+            })
+    }
 }

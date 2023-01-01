@@ -39,15 +39,17 @@ pub async fn execute(data_bundle: &mut CommandDataBundle) -> Result<String, Comm
     }
 }
 
-pub fn setup(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-    command
-        .name("add-admin")
-        .description("Add user as an admin")
-        .create_option(|option| {
-            option
-                .name("id")
-                .description("The user to add")
-                .kind(CommandOptionType::User)
-                .required(true)
-        })
+pub fn setup() -> impl FnOnce(&mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
+    move |command: &mut CreateApplicationCommand| {
+        command
+            .name("add-admin")
+            .description("Add user as an admin")
+            .create_option(|option| {
+                option
+                    .name("id")
+                    .description("The user to add")
+                    .kind(CommandOptionType::User)
+                    .required(true)
+            })
+    }
 }

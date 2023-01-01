@@ -1,8 +1,7 @@
-use crate::events::application_command::{
-    CommandDataBundle, CommandInstanceSetup, CommandSetupList,
-};
+use crate::events::application_command::CommandDataBundle;
 
 use self::errors::CommandError;
+use serenity::builder::CreateApplicationCommands;
 
 pub mod add_admin;
 pub mod errors;
@@ -20,30 +19,28 @@ pub mod test_multiple_select;
 pub mod test_single_select;
 pub mod utils;
 
-pub fn guild_commands_reg() -> CommandSetupList {
-    let mut guild_commands_list = CommandSetupList::new();
-
-    // Test commands
-    guild_commands_list.add(CommandInstanceSetup::new(test_give_roles::setup));
-    guild_commands_list.add(CommandInstanceSetup::new(test_log_channel::setup));
-    guild_commands_list.add(CommandInstanceSetup::new(test_button_message::setup));
-    guild_commands_list.add(CommandInstanceSetup::new(test_single_select::setup));
-    guild_commands_list.add(CommandInstanceSetup::new(test_multiple_select::setup));
-    guild_commands_list.add(CommandInstanceSetup::new(test_modal::setup));
+pub fn guild_commands_reg(
+    commands: &mut CreateApplicationCommands,
+) -> &mut CreateApplicationCommands {
+    // Test Commands
+    commands.create_application_command(test_give_roles::setup());
+    commands.create_application_command(test_log_channel::setup());
+    commands.create_application_command(test_button_message::setup());
+    commands.create_application_command(test_single_select::setup());
+    commands.create_application_command(test_multiple_select::setup());
+    commands.create_application_command(test_modal::setup());
 
     // UI Component Commands
-    guild_commands_list.add(CommandInstanceSetup::new(setup_pick_games_modal::setup));
+    commands.create_application_command(setup_pick_games_modal::setup());
 
-    // Admin commands
-    guild_commands_list.add(CommandInstanceSetup::new(add_admin::setup));
-    guild_commands_list.add(CommandInstanceSetup::new(list_admins::setup));
-    guild_commands_list.add(CommandInstanceSetup::new(remove_admin::setup));
+    // Admin Commands
+    commands.create_application_command(add_admin::setup());
+    commands.create_application_command(list_admins::setup());
+    commands.create_application_command(remove_admin::setup());
 
-    // Util commands
-    guild_commands_list.add(CommandInstanceSetup::new(prune::setup));
-    guild_commands_list.add(CommandInstanceSetup::new(get_user_id::setup));
-
-    guild_commands_list
+    // Util Commands
+    commands.create_application_command(prune::setup());
+    commands.create_application_command(get_user_id::setup())
 }
 
 pub async fn execute_command(data_bundle: &mut CommandDataBundle) -> Result<String, CommandError> {

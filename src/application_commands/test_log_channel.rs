@@ -76,8 +76,10 @@ pub async fn execute(data_bundle: &mut CommandDataBundle) -> Result<String, Comm
     }
 }
 
-pub fn setup(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-    command
-        .name("test-log-channel")
-        .description("Send an embedded message to the log channel")
+pub fn setup() -> impl FnOnce(&mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
+    move |command: &mut CreateApplicationCommand| {
+        command
+            .name("test-log-channel")
+            .description("Send an embedded message to the log channel")
+    }
 }

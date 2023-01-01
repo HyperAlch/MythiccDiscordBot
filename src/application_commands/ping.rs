@@ -9,6 +9,12 @@ pub async fn execute(data_bundle: &mut CommandDataBundle) -> Result<String, Comm
     Ok("Hey, I'm alive!".to_string())
 }
 
-pub fn setup(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-    command.name("ping").description("Check if bot is online")
+pub fn setup() -> impl FnOnce(&mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
+    move |command: &mut CreateApplicationCommand| {
+        command.name("ping").description("Check if bot is online")
+    }
 }
+
+// pub fn setup(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
+//     command.name("ping").description("Check if bot is online")
+// }

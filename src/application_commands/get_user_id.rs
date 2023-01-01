@@ -34,15 +34,17 @@ pub async fn execute(data_bundle: &mut CommandDataBundle) -> Result<String, Comm
     }
 }
 
-pub fn setup(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-    command
-        .name("get-user-id")
-        .description("Get a user id")
-        .create_option(|option| {
-            option
-                .name("id")
-                .description("The user to lookup")
-                .kind(CommandOptionType::User)
-                .required(true)
-        })
+pub fn setup() -> impl FnOnce(&mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
+    move |command: &mut CreateApplicationCommand| {
+        command
+            .name("get-user-id")
+            .description("Get a user id")
+            .create_option(|option| {
+                option
+                    .name("id")
+                    .description("The user to lookup")
+                    .kind(CommandOptionType::User)
+                    .required(true)
+            })
+    }
 }

@@ -104,6 +104,7 @@ fn match_error(error: CommandError) -> String {
         CommandError::ArgumentMissing(_) => "Missing an option...".to_string(),
         CommandError::RedisError(content) => content,
         CommandError::Other(content) => content,
+        CommandError::CacheError(content) => content,
         CommandError::UnresolvedData(_, content) => content,
     }
 }

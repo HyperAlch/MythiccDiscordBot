@@ -22,7 +22,7 @@ pub async fn execute(
         Some(u) => u,
         None => {
             return Err(ComponentInteractionError::UnresolvedData(
-                "game_add".to_string(),
+                "game_remove".to_string(),
                 "Interaction caller data missing".to_string(),
             ))
         }
@@ -42,7 +42,7 @@ pub async fn execute(
 
     let games: Vec<&u64> = game_roles
         .iter()
-        .filter(|r| !existing_user_roles.contains(&RoleId(**r)))
+        .filter(|r| existing_user_roles.contains(&RoleId(**r)))
         .collect();
 
     let mut select_options: Vec<(String, String)> = vec![];
@@ -65,7 +65,7 @@ pub async fn execute(
 
     if select_options.is_empty() {
         select_options.push((
-            "You currently have all available game roles".to_string(),
+            "You currently have no game roles to remove".to_string(),
             "0".to_string(),
         ))
     }
@@ -83,7 +83,7 @@ pub async fn execute(
                             c.create_action_row(|row| {
                                 // An action row can only contain one select menu!
                                 row.create_select_menu(|menu| {
-                                    menu.custom_id("game-add-reply");
+                                    menu.custom_id("game-remove-reply");
                                     menu.placeholder("No games selected");
                                     menu.max_values(u64::try_from(select_options.len()).unwrap());
                                     menu.options(move |f| {

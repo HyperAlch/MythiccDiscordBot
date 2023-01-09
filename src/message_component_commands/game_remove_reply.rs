@@ -17,13 +17,13 @@ pub async fn execute(
         Some(u) => u,
         None => {
             return Err(ComponentInteractionError::UnresolvedData(
-                "game_add_rely".to_string(),
+                "game_remove_rely".to_string(),
                 "Interaction caller data missing".to_string(),
             ))
         }
     };
-    let mut message = "**You now have the following roles**\n\n".to_string();
-    let mut new_roles = false;
+    let mut message = "**You no longer have the following roles**\n\n".to_string();
+    let mut removed_roles = false;
 
     let existing_user_roles = &user.roles;
     let mut game_roles = vec![];
@@ -39,13 +39,13 @@ pub async fn execute(
 
     let games: Vec<&u64> = game_roles
         .iter()
-        .filter(|r| !existing_user_roles.contains(&RoleId(**r)))
+        .filter(|r| existing_user_roles.contains(&RoleId(**r)) || **r == 0)
         .collect();
 
     for game in games {
         if *game == 0 {
             return Ok(MessageComponentResponseBundle {
-                message: Some("No roles assigned".to_string()),
+                message: Some("No roles removed".to_string()),
                 modal: None,
             });
         }
@@ -59,23 +59,23 @@ pub async fn execute(
             }
         };
 
-        match user.add_role(&ctx.http, RoleId(*game)).await {
+        match user.remove_role(&ctx.http, RoleId(*game)).await {
             Ok(_) => {
-                new_roles = true;
+                removed_roles = true;
                 message.push_str(&format!("`{}`    ", role_name));
             }
             Err(error) => return Err(ComponentInteractionError::Other(error.to_string())),
         }
     }
 
-    if new_roles {
+    if removed_roles {
         Ok(MessageComponentResponseBundle {
             message: Some(message),
             modal: None,
         })
     } else {
         Ok(MessageComponentResponseBundle {
-            message: Some("You already have the role(s) selected".to_string()),
+            message: Some("You already removed the role(s) selected".to_string()),
             modal: None,
         })
     }

@@ -77,7 +77,7 @@ pub async fn execute(
                 .kind(InteractionResponseType::ChannelMessageWithSource)
                 .interaction_response_data(|message| {
                     message
-                        .content("Please select the games you're interested in")
+                        .content("Please select the roles you want to remove")
                         .ephemeral(data_bundle.is_ephemeral)
                         .components(|c| {
                             c.create_action_row(|row| {

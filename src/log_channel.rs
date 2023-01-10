@@ -142,8 +142,8 @@ pub async fn log_roles_updated(
                 e.title("Roles Updated")
                     .color(YELLOW)
                     .description("🔄 🔄 🔄")
-                    .field("New Roles: ", new_roles, true)
-                    .field("Removed Roles: ", old_roles, true)
+                    .field("New Roles: ", new_roles, false)
+                    .field("Removed Roles: ", old_roles, false)
                     .timestamp(Utc::now())
                     .set_author(author)
                     .field(

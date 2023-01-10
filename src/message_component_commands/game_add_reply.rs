@@ -18,7 +18,7 @@ pub async fn execute(
 
     let ctx = &data_bundle.ctx;
 
-    // Grad the games and the user from the interaction data
+    // Grab the games and the user from the interaction data
     let games = &data_bundle.interaction.data.values;
     let user = match data_bundle.interaction.member.as_mut() {
         Some(u) => u,

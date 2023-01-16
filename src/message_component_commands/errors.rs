@@ -14,6 +14,9 @@ pub enum ComponentInteractionError {
     #[error("Redis: {0}")]
     RedisError(ErrorMessage),
 
+    #[error("Cache: {0}")]
+    CacheError(ErrorMessage),
+
     #[error("Error: `{0}`")]
     Other(ErrorMessage),
 }

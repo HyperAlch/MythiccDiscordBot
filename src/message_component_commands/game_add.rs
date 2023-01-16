@@ -1,5 +1,8 @@
+use serenity::http::client::Http;
 use serenity::model::prelude::{interaction::InteractionResponseType, RoleId};
+use std::env;
 
+use crate::redis_client::list_games;
 use crate::{
     events::message_component::{MessageComponentDataBundle, MessageComponentResponseBundle},
     message_component_commands::errors::ComponentInteractionError,
@@ -50,12 +53,7 @@ pub async fn execute(
     for game in games {
         let role = match RoleId(*game).to_role_cached(&ctx.cache) {
             Some(r) => r,
-            None => {
-                return Err(ComponentInteractionError::Other(format!(
-                    "role {} not cached!",
-                    *game
-                )))
-            }
+            None => return Err(fix_roles(&mut connection).await),
         };
 
         let role_id = *game;
@@ -105,5 +103,62 @@ pub async fn execute(
             modal: None,
         }),
         Err(e) => Err(ComponentInteractionError::Other(e.to_string())),
+    }
+}
+
+async fn fix_roles(connection: &mut redis::Connection) -> ComponentInteractionError {
+    let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
+    let guild_id = match redis_client::get_guild_id(connection) {
+        Ok(id) => match id {
+            Some(x) => x,
+            None => return ComponentInteractionError::RedisError("`guild id` missing".to_string()),
+        },
+        Err(error) => return ComponentInteractionError::RedisError(error.to_string()),
+    };
+
+    let guild_id = match guild_id.parse::<u64>() {
+        Ok(id) => id,
+        Err(_) => return ComponentInteractionError::Other("`guild id` is invalid".to_string()),
+    };
+
+    let api = Http::new(&token);
+
+    let guild_roles = match api.get_guild_roles(guild_id).await {
+        Ok(roles) => roles,
+        Err(error) => return ComponentInteractionError::Other(error.to_string()),
+    };
+
+    let mut guild_roles_str = Vec::new();
+
+    for role in guild_roles {
+        guild_roles_str.push(role.to_string());
+    }
+
+    let guild_roles = guild_roles_str;
+
+    let games = match list_games(connection) {
+        Ok(x) => x,
+        Err(error) => return ComponentInteractionError::RedisError(error.to_string()),
+    };
+
+    let mut missing_roles = Vec::new();
+
+    for game in games {
+        let game_formated = format!("<@&{}>", game);
+        if !guild_roles.contains(&game_formated) {
+            missing_roles.push(game);
+        }
+    }
+
+    if missing_roles.is_empty() {
+        ComponentInteractionError::CacheError("One of more roles seem to be missing from the cache, please wait a few minutes and try again".to_string())
+    } else {
+        for role in missing_roles {
+            match redis_client::remove_game(connection, role) {
+                Ok(_) => (),
+                Err(error) => return ComponentInteractionError::RedisError(error.to_string()),
+            };
+        }
+        ComponentInteractionError::Other("One or multiple roles in the games list where deleted. This has been fixed, dismiss this message and try again!".to_string())
     }
 }

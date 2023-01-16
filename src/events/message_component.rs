@@ -94,6 +94,7 @@ fn match_error(error: ComponentInteractionError) -> String {
         ComponentInteractionError::ArgumentMissing(_) => "Missing an option...".to_string(),
         ComponentInteractionError::RedisError(content) => content,
         ComponentInteractionError::Other(content) => content,
+        ComponentInteractionError::CacheError(content) => content,
         ComponentInteractionError::UnresolvedData(_, content) => content,
     }
 }

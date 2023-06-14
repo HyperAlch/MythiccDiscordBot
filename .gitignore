@@ -1,3 +1,4 @@
 /target
 .env
 /redis-AOF
+/.vscode
